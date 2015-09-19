@@ -27,16 +27,38 @@ class Maze(object):
     def dfs(self):
         # returns a list of directions to reach goals
         # directions: "N", "E", "S", "W"
-        return self._dfs(self, [self.currPos,], [])
+        return self._dfs([self.currPos,], [], [])
 
-    def _dfs(self, stack, visited):
+    def _dfs(self, stack, visited, path):
         # recursive helper method for dfs
         # stack and visited is list of coords (row, col)
+        # path is list of coords
+        visited.append(stack[0]) # add coord to visited FIRST
+        coord = stack[0]
+        currRow, currCol = stack[0]
         if len(stack) == 0: # base case
-            return []
-        elif self.getChar(stack[0]) == '%': # wall
-            return []
-        # TODO
+            print "stack is empty"
+            return path + self._dfs(stack, visited, path)
+        stack.pop(0) # pop from stack AFTER EMPTY STACK CHECK
+        if self.getChar(coord) == '%': # wall
+            print coord, "is wall"
+            return path + self._dfs(stack, visited, path)
+        elif self.getChar(coord) == '.': # goal
+            print coord, "IS GOAL!"
+            return path # return path: you're done!
+        path.append(coord) # add coord to path AFTER ALL CHECKS
+        
+        # recursive case: visit each neighbor
+        if (currRow, currCol+1) not in visited:
+            stack.append((currRow, currCol+1)) # go East
+        if (currRow+1, currCol) not in visited:
+            stack.append((currRow+1, currCol)) # go South
+        if (currRow, currCol-1) not in visited:
+            stack.append((currRow, currCol-1)) # go West
+        if (currRow-1, currCol) not in visited:
+            stack.append((currRow-1, currCol)) # go North
+        print "recurse from", currRow, currCol
+        return path + self._dfs(stack, visited, path)
     
     def __str__(self):
         """To string method."""
