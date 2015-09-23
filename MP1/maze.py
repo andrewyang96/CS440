@@ -44,6 +44,7 @@ class Maze(object):
             if self.getChar(coord) == '%': # wall
                 pass
             elif self.getChar(coord) == '.': # goal
+                print self.debug(path) # debug
                 return path
             else: # recursive case
                 for adj, direction in self.adjacent(coord):
@@ -63,12 +64,33 @@ class Maze(object):
             if self.getChar(coord) == '%': # wall
                 pass
             elif self.getChar(coord) == '.': # goal
+                print self.debug(path) # debug
                 return path
             else: # recursive case
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited:
                         stack.append((adj, path + direction))
         return [] # impossible
+
+    def debug(self, path):
+        # debug with given path
+        visited = set()
+        currCoord = self.currPos
+        visited.add(currCoord)
+        for direction in path:
+            currRow, currCol = currCoord
+            if direction == 'E':
+                currCoord = (currRow, currCol+1)
+            elif direction == 'S':
+                currCoord = (currRow+1, currCol)
+            elif direction == 'W':
+                currCoord = (currRow, currCol-1)
+            elif direction == 'N':
+                currCoord = (currRow-1, currCol)
+            else:
+                print "WARNING: something wrong with debug"
+            visited.add(currCoord)
+        return "\n".join(["".join(['V' if (row, col) in visited else char for col, char in enumerate(line)]) for row, line in enumerate(self.maze)])
     
     def __str__(self):
         """To string method."""
