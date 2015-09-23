@@ -36,7 +36,20 @@ class Maze(object):
         ]
     
     def bfs(self):
-        pass
+        queue = [(self.currPos, []),]
+        visited = set()
+        while len(queue) > 0:
+            coord, path = queue.pop(0)
+            visited.add(coord)
+            if self.getChar(coord) == '%': # wall
+                pass
+            elif self.getChar(coord) == '.': # goal
+                return path
+            else: # recursive case
+                for adj, direction in self.adjacent(coord):
+                    if adj not in visited:
+                        queue.append((adj, path + direction))
+        return [] # impossible
 
     def dfs(self):
         # returns a list of coords that compose path
