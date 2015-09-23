@@ -22,10 +22,21 @@ class Maze(object):
             self.maze.append(ln)
 
     def getChar(self, coord):
+        # helper method
         return self.maze[coord[0]][coord[1]]
 
+    def adjacent(self, coord):
+        # helper method
+        currRow, currCol = coord
+        return [
+            (currRow, currCol+1),
+            (currRow+1, currCol),
+            (currRow, currCol-1),
+            (currRow-1, currCol)
+        ]
+
     def dfs(self):
-        # returns a list of directions to reach goals
+        # returns a list of coords that compose path
         # directions: "N", "E", "S", "W"
         return self._dfs([self.currPos,], [], [])
 
@@ -33,31 +44,25 @@ class Maze(object):
         # recursive helper method for dfs
         # stack and visited is list of coords (row, col)
         # path is list of coords
-        visited.append(stack[0]) # add coord to visited FIRST
-        coord = stack[0]
-        currRow, currCol = stack[0]
         if len(stack) == 0: # base case
             print "stack is empty"
-            return path + self._dfs(stack, visited, path)
-        stack.pop(0) # pop from stack AFTER EMPTY STACK CHECK
+            return []
+        visited.append(stack[0]) # add coord to visited FIRST
+        coord = stack.pop(0) # pop from stack AFTER EMPTY STACK CHECK
+        print "calling w", coord
         if self.getChar(coord) == '%': # wall
             print coord, "is wall"
             return path + self._dfs(stack, visited, path)
         elif self.getChar(coord) == '.': # goal
             print coord, "IS GOAL!"
-            return path # return path: you're done!
+            stack[:] = []
+            return [] # return path: you're done!
         path.append(coord) # add coord to path AFTER ALL CHECKS
         
         # recursive case: visit each neighbor
-        if (currRow, currCol+1) not in visited:
-            stack.append((currRow, currCol+1)) # go East
-        if (currRow+1, currCol) not in visited:
-            stack.append((currRow+1, currCol)) # go South
-        if (currRow, currCol-1) not in visited:
-            stack.append((currRow, currCol-1)) # go West
-        if (currRow-1, currCol) not in visited:
-            stack.append((currRow-1, currCol)) # go North
-        print "recurse from", currRow, currCol
+        for adj in self.adjacent(coord):
+            if adj not in visited:
+                stack.append(adj)
         return path + self._dfs(stack, visited, path)
     
     def __str__(self):
