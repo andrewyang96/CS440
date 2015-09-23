@@ -29,76 +29,33 @@ class Maze(object):
         # helper method
         currRow, currCol = coord
         return [
-            (currRow, currCol+1),
-            (currRow+1, currCol),
-            (currRow, currCol-1),
-            (currRow-1, currCol)
+            ((currRow, currCol+1), ['E',]),
+            ((currRow+1, currCol), ['S',]),
+            ((currRow, currCol-1), ['W',]),
+            ((currRow-1, currCol), ['N',])
         ]
     
     def bfs(self):
-
-        return self._bfs([self.currPos,], [], [])
-
-    def _bfs(self, queue, visited, path):
-         # recursive helper method for dfs
-        # stack and visited is list of coords (row, col)
-        # path is list of coords
-        visited.enqueu(queue[0]) # add coord to visited FIRST
-        coord = queue[0]
-        currRow, currCol = queue[0]
-        if len(queue) == 0: # base case
-            print "queue is empty"
-            return path + self._dfs(queue, visited, path)
-        queue.dequeue(0) # pop from queue AFTER EMPTY queue CHECK
-        if self.getChar(coord) == '%': # wall
-            print coord, "is wall"
-            return path + self._dfs(queue, visited, path)
-        elif self.getChar(coord) == '.': # goal
-            print coord, "IS GOAL!"
-            return path # return path: you're done!
-        path.append(coord) # add coord to path AFTER ALL CHECKS
-        
-        # recursive case: visit each neighbor
-        if (currRow, currCol+1) not in visited:
-            queue.enqueue((currRow, currCol+1)) # go East
-        if (currRow+1, currCol) not in visited:
-            queue.enqueue((currRow+1, currCol)) # go South
-        if (currRow, currCol-1) not in visited:
-            queue.enqueue((currRow, currCol-1)) # go West
-        if (currRow-1, currCol) not in visited:
-            queue.enqueue((currRow-1, currCol)) # go North
-        print "recurse from", currRow, currCol
-        return path + self._dfs(queue, visited, path)
+        pass
 
     def dfs(self):
         # returns a list of coords that compose path
         # directions: "N", "E", "S", "W"
-        return self._dfs([self.currPos,], [], [])
-
-    def _dfs(self, stack, visited, path):
-        # recursive helper method for dfs
-        # stack and visited is list of coords (row, col)
-        # path is list of coords
-        if len(stack) == 0: # base case
-            print "stack is empty"
-            return []
-        visited.append(stack[0]) # add coord to visited FIRST
-        coord = stack.pop(0) # pop from stack AFTER EMPTY STACK CHECK
-        print "calling w", coord
-        if self.getChar(coord) == '%': # wall
-            print coord, "is wall"
-            return path + self._dfs(stack, visited, path)
-        elif self.getChar(coord) == '.': # goal
-            print coord, "IS GOAL!"
-            stack[:] = []
-            return [] # return path: you're done!
-        path.append(coord) # add coord to path AFTER ALL CHECKS
-        
-        # recursive case: visit each neighbor
-        for adj in self.adjacent(coord):
-            if adj not in visited:
-                stack.append(adj)
-        return path + self._dfs(stack, visited, path)
+        # return self._dfs([self.currPos,], [], [])
+        stack = [(self.currPos, []),]
+        visited = set()
+        while len(stack) > 0:
+            coord, path = stack.pop()
+            visited.add(coord)
+            if self.getChar(coord) == '%': # wall
+                pass
+            elif self.getChar(coord) == '.': # goal
+                return path
+            else: # recursive case
+                for adj, direction in self.adjacent(coord):
+                    if adj not in visited:
+                        stack.append((adj, path + direction))
+        return [] # impossible
     
     def __str__(self):
         """To string method."""
