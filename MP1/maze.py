@@ -99,13 +99,34 @@ class Maze(object):
         return bestPath
 
     def greedy(self):
-        pass
+        # like DFS, but puts coords closest to goal up front
+        stack = [(self.currPos, [], set()),]
+        bestPath = None
+        while len(stack) > 0:
+            coord, path, visited = stack.pop()
+            visited = visited.copy()
+            visited.add(coord)
+            if bestPath is not None and len(path) >= len(bestPath):
+                pass
+            elif self.getChar(coord) == '%': # wall
+                pass
+            else: # recursive case
+                if self.getChar(coord) == '.': # goal
+                    if bestPath is None or len(path) < len(bestPath):
+                        bestPath = path[:]
+                for adj, direction in self.adjacent(coord):
+                    aboutToAppend = []
+                    if adj not in visited:
+                        aboutToAppend.append(((adj, path + direction, visited), self.greedy_manhattan_distance(adj, self.goalPos)))
+                    # sort by manhattan distance
+                    aboutToAppend = sorted(aboutToAppend, key=lambda (el, dist): dist, reverse=True)
+                    for el, dist in aboutToAppend:
+                        stack.append(el)
+        print self.debug(bestPath) # debug
+        return bestPath
 
-    def greedy_manhattan_distance(self, goalPos, currPos):
-        #heuristic function
-        #distance = 0  
-        distance = abs(goalPos[0] - currPos[0]) + abs(goalPos[1] - currPos[1])
-        return distance
+    def greedy_manhattan_distance(self, currPos, goalPos):
+        return abs(currPos[0] - goalPos[0]) + abs(currPos[1] - goalPos[1])
 
     def debug(self, path):
         # debug with given path
