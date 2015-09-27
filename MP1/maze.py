@@ -84,14 +84,13 @@ class Maze(object):
             coord, path, visited = stack.pop()
             visited = visited.copy()
             visited.add(coord)
-            if self.getChar(coord) == '%': # wall
+            if bestPath is not None and len(path) >= len(bestPath):
+                pass
+            elif self.getChar(coord) == '%': # wall
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
-                    if bestPath is not None:
-                        print len(path), 'vs current best', len(bestPath)
                     if bestPath is None or len(path) < len(bestPath):
-                        print 'replace'
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited:
