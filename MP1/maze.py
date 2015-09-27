@@ -1,3 +1,5 @@
+from Queue import PriorityQueue
+
 class Maze(object):
     """
     % = wall
@@ -71,6 +73,16 @@ class Maze(object):
                     if adj not in visited:
                         stack.append((adj, path + direction))
         return [] # impossible
+
+    def greedy(self):
+
+    return []
+
+    def greedy_manhattan_distance(self, goalPos, currPos):
+    #heuristic function
+    #distance = 0  
+    distance = abs(goalPos[0] - currPos[0]) + abs(goalPos[1] - currPos[1])
+    return distance
 
     def debug(self, path):
         # debug with given path
