@@ -54,7 +54,7 @@ class Maze(object):
                         queue.append((adj, path + direction))
         return [] # impossible
 
-    def dfs(self):
+    def dfs_bad(self):
         # returns a list of coords that compose path
         # directions: "N", "E", "S", "W"
         # return self._dfs([self.currPos,], [], [])
@@ -74,15 +74,39 @@ class Maze(object):
                         stack.append((adj, path + direction))
         return [] # impossible
 
-    def greedy(self):
+    def dfs(self):
+        # returns a list of coords that compose path
+        # directions: "N", "E", "S", "W"
+        # return self._dfs([self.currPos,], [], [])
+        stack = [(self.currPos, [], set()),]
+        bestPath = None
+        while len(stack) > 0:
+            coord, path, visited = stack.pop()
+            visited = visited.copy()
+            visited.add(coord)
+            if self.getChar(coord) == '%': # wall
+                pass
+            else: # recursive case
+                if self.getChar(coord) == '.': # goal
+                    if bestPath is not None:
+                        print len(path), 'vs current best', len(bestPath)
+                    if bestPath is None or len(path) < len(bestPath):
+                        print 'replace'
+                        bestPath = path[:]
+                for adj, direction in self.adjacent(coord):
+                    if adj not in visited:
+                        stack.append((adj, path + direction, visited))
+        print self.debug(bestPath) # debug
+        return bestPath
 
-    return []
+    def greedy(self):
+        pass
 
     def greedy_manhattan_distance(self, goalPos, currPos):
-    #heuristic function
-    #distance = 0  
-    distance = abs(goalPos[0] - currPos[0]) + abs(goalPos[1] - currPos[1])
-    return distance
+        #heuristic function
+        #distance = 0  
+        distance = abs(goalPos[0] - currPos[0]) + abs(goalPos[1] - currPos[1])
+        return distance
 
     def debug(self, path):
         # debug with given path
