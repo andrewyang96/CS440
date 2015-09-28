@@ -40,17 +40,20 @@ class Maze(object):
     def bfs(self):
         queue = [(self.currPos, []),]
         visited = set()
+        numNodes = 0
         while len(queue) > 0:
             coord, path = queue.pop(0)
             visited.add(coord)
             if self.getChar(coord) == '%': # wall
                 pass
             elif self.getChar(coord) == '.': # goal
+                print "Num Nodes:", numNodes
                 print self.debug(path) # debug
                 return path
             else: # recursive case
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
+                        numNodes += 1
                         queue.append((adj, path + direction))
         return [] # impossible
 
@@ -60,6 +63,7 @@ class Maze(object):
         # return self._dfs([self.currPos,], [], [])
         stack = [(self.currPos, [], set()),]
         bestPath = None
+        numNodes = 0
         while len(stack) > 0:
             coord, path, visited = stack.pop()
             visited = visited.copy()
@@ -70,6 +74,7 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
+                    print "Num Nodes:", numNodes
                     print self.debug(path)
                     return path # return on first path found
                     print "Found a path:", path
@@ -78,6 +83,7 @@ class Maze(object):
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
+                        numNodes += 1
                         stack.append((adj, path + direction, visited))
         print self.debug(bestPath) # debug
         return bestPath
@@ -87,6 +93,7 @@ class Maze(object):
         pq = PriorityQueue(maxsize=0)
         pq.put_nowait((self.greedy_manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
+        numNodes = 0
         while not pq.empty():
             priority, curr = pq.get_nowait()
             coord, path, visited = curr
@@ -98,6 +105,7 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
+                    print "Num Nodes:", numNodes
                     print self.debug(path)
                     return path # return on first path found
                     print "Found a path:", path
@@ -106,8 +114,10 @@ class Maze(object):
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
+                        numNodes += 1
                         heur = self.greedy_manhattan_distance(adj, self.goalPos)
-                        pq.put_nowait((heur, (adj, path + direction, visited)))
+                        if bestPath is None or heur < bestHeur: # preselect based on heuristic
+                            pq.put_nowait((heur, (adj, path + direction, visited)))
         print self.debug(bestPath) # debug
         return bestPath
 
@@ -117,6 +127,7 @@ class Maze(object):
         pq.put_nowait((self.greedy_manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
         bestHeur = None
+        numNodes = 0
         while not pq.empty():
             priority, curr = pq.get_nowait()
             coord, path, visited = curr
@@ -135,8 +146,11 @@ class Maze(object):
                         bestHeur = priority
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
+                        numNodes += 1
                         heur = len(path + direction) + self.greedy_manhattan_distance(adj, self.goalPos)
-                        pq.put_nowait((heur, (adj, path + direction, visited)))
+                        if bestPath is None or heur < bestHeur: # preselect based on heuristic
+                            pq.put_nowait((heur, (adj, path + direction, visited)))
+        print "Num Nodes:", numNodes
         print self.debug(bestPath) # debug
         return bestPath
 
@@ -147,6 +161,7 @@ class Maze(object):
         pq.put_nowait((self.euclidean_heuristic(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
         bestHeur = None
+        numNodes = 0
         while not pq.empty():
             priority, curr = pq.get_nowait()
             coord, path, visited = curr
@@ -158,12 +173,16 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
-                    if bestPath is None or priority < bestHeur:
+                    print "Found a path:", path
+                    if bestPath is None or len(path) < len(bestPath):
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
+                        numNodes += 1
                         heur = self.calculate_penalty(path + direction, forwardPenalty, turnPenalty) + self.euclidean_heuristic(adj, self.goalPos)
-                        pq.put_nowait((heur, (adj, path + direction, visited)))
+                        if bestPath is None or heur < bestHeur: # preselect based on heuristic
+                            pq.put_nowait((heur, (adj, path + direction, visited)))
+        print "Num Nodes:", numNodes
         print self.debug(bestPath) # debug
         return bestPath
 
@@ -243,9 +262,32 @@ def printMazeCasesPart11(f, name, runDFS=True, runBFS=True, runGreedy=True, runA
         print "Path:", astar
         print
 
+def printMazeCasesPart12(f, name):
+    print name
+    print '-'*80
+
+    m = Maze(f)
+
+    print "Forward: 2, Turn: 1"
+    twoone = m.a_star_penalize(2, 1)
+    print "Path:", twoone
+    print
+
+    print "Forward: 1, Turn: 2"
+    onetwo = m.a_star_penalize(1, 2)
+    print "Path:", onetwo
+    print
+
+# part 1.1
 with open("mediumMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Medium Maze")
 with open("bigMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Big Maze")
 with open("openMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Open Maze", True, False, True, True)
+    printMazeCasesPart11(f, "Open Maze", True, False, False, False)
+
+# part 1.2
+with open("smallTurns.txt", 'r') as f:
+    printMazeCasesPart12(f, "Small Turns")
+with open("bigTurns.txt", 'r') as f:
+    printMazeCasesPart12(f, "Big Turns")
