@@ -84,10 +84,12 @@ class Maze(object):
 
     def greedy(self):
         # like DFS, but puts coords closest to goal up front
-        stack = [(self.currPos, [], set()),]
+        pq = PriorityQueue(maxsize=0)
+        pq.put_nowait((self.greedy_manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
-        while len(stack) > 0:
-            coord, path, visited = stack.pop()
+        while not pq.empty():
+            priority, curr = pq.get_nowait()
+            coord, path, visited = curr
             visited = visited.copy()
             visited.add(coord)
             if bestPath is not None and len(path) >= len(bestPath):
@@ -103,13 +105,9 @@ class Maze(object):
                         print "Is best path"
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
-                    aboutToAppend = []
                     if adj not in visited and self.getChar(adj) != '%':
-                        aboutToAppend.append(((adj, path + direction, visited), self.greedy_manhattan_distance(adj, self.goalPos)))
-                    # sort by manhattan distance
-                    aboutToAppend = sorted(aboutToAppend, key=lambda (el, dist): dist, reverse=True)
-                    for el, dist in aboutToAppend:
-                        stack.append(el)
+                        heur = self.greedy_manhattan_distance(adj, self.goalPos)
+                        pq.put_nowait((heur, (adj, path + direction, visited)))
         print self.debug(bestPath) # debug
         return bestPath
 
