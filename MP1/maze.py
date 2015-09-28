@@ -12,6 +12,7 @@ class Maze(object):
         self.maze = []
         self.currPos = None
         self.goalPos = None
+        self.numGhostSpaces = 0 # use in GhostMaze
         for row, line in enumerate(fp):
             line = line.strip() # get rid of newline
             ln = []
@@ -21,6 +22,10 @@ class Maze(object):
                     self.currPos = (row, col)
                 elif char == '.':
                     self.goalPos = (row, col)
+                elif char == 'G':
+                    self.initGhostPos = (row, col) # use in GhostMaze
+                elif char == 'g':
+                    self.numGhostSpaces += 1 # use in GhostMaze
             self.maze.append(ln)
 
     def getChar(self, coord):
@@ -232,6 +237,23 @@ class Maze(object):
         """To string method."""
         return "\n".join(["".join(line) for line in self.maze])
 
+class GhostMaze(Maze):
+    # part 1.3
+    def __init__(self, fp):
+        Maze.__init__(self, fp)
+        # calculate ghost trajectory
+        self.ghostPosList = []
+        currGhostPos = self.initGhostPos
+        direction = 1 # face right at first
+        for i in xrange(self.numGhostSpaces*2):
+            self.ghostPosList.append(currGhostPos)
+            nextGhostPos = (currGhostPos[0], currGhostPos[1] + direction)
+            if self.getChar(nextGhostPos) == '%': # reverse dir
+                direction *= -1
+                nextGhostPos = (currGhostPos[0], currGhostPos[1] + direction)
+            currGhostPos = nextGhostPos
+        print self.ghostPosList
+
 def printMazeCasesPart11(f, name, runDFS=True, runBFS=True, runGreedy=True, runAStar=True):
     print name
     print '-'*80
@@ -283,6 +305,12 @@ def printMazeCasesPart12(f, name):
     print "Path:", onetwo
     print
 
+def printMazeCases13(f, name):
+    print name
+    print '-'*80
+
+    m = GhostMaze(f) # change classes
+"""
 # part 1.1
 with open("mediumMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Medium Maze")
@@ -296,3 +324,11 @@ with open("smallTurns.txt", 'r') as f:
     printMazeCasesPart12(f, "Small Turns")
 with open("bigTurns.txt", 'r') as f:
     printMazeCasesPart12(f, "Big Turns")
+"""
+# part 1.3
+with open("smallGhost.txt", 'r') as f:
+    printMazeCases13(f, "Small Ghost")
+with open("mediumGhost.txt", 'r') as f:
+    printMazeCases13(f, "Medium Ghost")
+with open("bigGhost.txt", 'r') as f:
+    printMazeCases13(f, "Big Ghost")
