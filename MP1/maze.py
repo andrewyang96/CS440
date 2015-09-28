@@ -145,12 +145,58 @@ class Maze(object):
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited:
-                        pq.put_nowait((len(path + direction) + self.greedy_manhattan_distance(adj, self.goalPos), (adj, path + direction, visited)))
+                        heur = len(path + direction) + self.greedy_manhattan_distance(adj, self.goalPos)
+                        pq.put_nowait((heur, (adj, path + direction, visited)))
+        print self.debug(bestPath) # debug
+        return bestPath
+
+    def a_star_penalize(self, forwardPenalty, turnPenalty):
+        # part 1.2
+        # using euclidean heuristic (not manhattan)
+        pq = PriorityQueue(maxsize=0)
+        pq.put_nowait((self.euclidean_heuristic(self.currPos, self.goalPos), (self.currPos, [], set())))
+        bestPath = None
+        while not pq.empty():
+            priority, curr = pq.get_nowait()
+            coord, path, visited = curr
+            visited = visited.copy()
+            visited.add(coord)
+            if bestPath is not None and len(path) >= len(bestPath):
+                pass
+            elif self.getChar(coord) == '%': # wall
+                pass
+            else: # recursive case
+                if self.getChar(coord) == '.': # goal
+                    if bestPath is None or len(path) < len(bestPath):
+                        bestPath = path[:]
+                for adj, direction in self.adjacent(coord):
+                    if adj not in visited:
+                        heur = self.calculate_penalty(path + direction, forwardPenalty, turnPenalty) + self.euclidean_heuristic(adj, self.goalPos)
+                        pq.put_nowait((heur, (adj, path + direction, visited)))
         print self.debug(bestPath) # debug
         return bestPath
 
     def greedy_manhattan_distance(self, currPos, goalPos):
         return abs(currPos[0] - goalPos[0]) + abs(currPos[1] - goalPos[1])
+
+    def euclidean_heuristic(self, currPos, goalPos):
+        return (currPos[0] - goalPos[0])**2 + (currPos[1] - goalPos[1])**2
+
+    def calculate_penalty(self, path, forwardPenalty, turnPenalty):
+        # helper function for a_star_penalize
+        if len(path) <= 1:
+            return len(path) * forwardPenalty
+
+        accum = 0
+        for idx, direction in enumerate(path):
+            if idx > 0:
+                if path[idx] == path[idx-1]: # forward
+                    accum += forwardPenalty
+                else: # turn
+                    accum += turnPenalty
+            else:
+                accum += forwardPenalty
+        return accum
 
     def debug(self, path):
         # debug with given path
