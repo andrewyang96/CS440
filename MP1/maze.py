@@ -91,7 +91,7 @@ class Maze(object):
     def greedy(self):
         # like DFS, but puts coords closest to goal up front
         pq = PriorityQueue(maxsize=0)
-        pq.put_nowait((self.greedy_manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
+        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
         numNodes = 0
         while not pq.empty():
@@ -115,7 +115,7 @@ class Maze(object):
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
-                        heur = self.greedy_manhattan_distance(adj, self.goalPos)
+                        heur = self.manhattan_distance(adj, self.goalPos)
                         if bestPath is None or heur < bestHeur: # preselect based on heuristic
                             pq.put_nowait((heur, (adj, path + direction, visited)))
         print self.debug(bestPath) # debug
@@ -124,7 +124,7 @@ class Maze(object):
     def a_star(self):
         # like BFS, but puts coords with lowest heuristic (path length + manhattan dist to goal) up front
         pq = PriorityQueue(maxsize=0)
-        pq.put_nowait((self.greedy_manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
+        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
         bestHeur = None
         numNodes = 0
@@ -147,18 +147,18 @@ class Maze(object):
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
-                        heur = len(path + direction) + self.greedy_manhattan_distance(adj, self.goalPos)
+                        heur = len(path + direction) + self.manhattan_distance(adj, self.goalPos)
                         if bestPath is None or heur < bestHeur: # preselect based on heuristic
                             pq.put_nowait((heur, (adj, path + direction, visited)))
         print "Num Nodes:", numNodes
         print self.debug(bestPath) # debug
         return bestPath
 
-    def a_star_penalize(self, forwardPenalty, turnPenalty):
+    def a_star_penalize(self, forwardPenalty, turnPenalty, manhattanHeurOnly=True):
         # part 1.2
         # using euclidean heuristic (not manhattan)
         pq = PriorityQueue(maxsize=0)
-        pq.put_nowait((self.euclidean_heuristic(self.currPos, self.goalPos), (self.currPos, [], set())))
+        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
         bestHeur = None
         numNodes = 0
@@ -179,14 +179,14 @@ class Maze(object):
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
-                        heur = self.calculate_penalty(path + direction, forwardPenalty, turnPenalty) + self.euclidean_heuristic(adj, self.goalPos)
+                        heur = self.calculate_penalty(path + direction, forwardPenalty, turnPenalty) * (not manhattanHeurOnly) + self.manhattan_distance(adj, self.goalPos)
                         if bestPath is None or heur < bestHeur: # preselect based on heuristic
                             pq.put_nowait((heur, (adj, path + direction, visited)))
         print "Num Nodes:", numNodes
         print self.debug(bestPath) # debug
         return bestPath
 
-    def greedy_manhattan_distance(self, currPos, goalPos):
+    def manhattan_distance(self, currPos, goalPos):
         return abs(currPos[0] - goalPos[0]) + abs(currPos[1] - goalPos[1])
 
     def euclidean_heuristic(self, currPos, goalPos):
@@ -268,13 +268,23 @@ def printMazeCasesPart12(f, name):
 
     m = Maze(f)
 
-    print "Forward: 2, Turn: 1"
+    print "Forward: 2, Turn: 1, Manhattan"
     twoone = m.a_star_penalize(2, 1)
     print "Path:", twoone
     print
 
-    print "Forward: 1, Turn: 2"
+    print "Forward: 2, Turn: 1, Manhattan PLUS path dist"
+    twoone = m.a_star_penalize(2, 1, False)
+    print "Path:", twoone
+    print
+
+    print "Forward: 1, Turn: 2, Manhattan"
     onetwo = m.a_star_penalize(1, 2)
+    print "Path:", onetwo
+    print
+
+    print "Forward: 1, Turn: 2, Manhattan PLUS path dist"
+    onetwo = m.a_star_penalize(1, 2, False)
     print "Path:", onetwo
     print
 
