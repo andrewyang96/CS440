@@ -70,6 +70,8 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
+                    print self.debug(path)
+                    return path # return on first path found
                     print "Found a path:", path
                     if bestPath is None or len(path) < len(bestPath):
                         print "Is best path"
@@ -94,6 +96,8 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
+                    print self.debug(path)
+                    return path # return on first path found
                     print "Found a path:", path
                     if bestPath is None or len(path) < len(bestPath):
                         print "Is best path"
@@ -244,6 +248,6 @@ def printMazeCasesPart11(f, name, runDFS=True, runBFS=True, runGreedy=True, runA
 with open("mediumMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Medium Maze")
 with open("bigMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Big Maze", False, True, False, True)
+    printMazeCasesPart11(f, "Big Maze")
 with open("openMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Open Maze", False, False, False, True)
+    printMazeCasesPart11(f, "Open Maze", True, False, True, True)
