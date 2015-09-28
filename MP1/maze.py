@@ -130,19 +130,21 @@ class Maze(object):
         pq = PriorityQueue(maxsize=0)
         pq.put_nowait((self.greedy_manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
+        bestHeur = None
         while not pq.empty():
             priority, curr = pq.get_nowait()
             coord, path, visited = curr
             visited = visited.copy()
             visited.add(coord)
-            if bestPath is not None and len(path) >= len(bestPath):
+            if bestPath is not None and priority >= bestHeur:
                 pass
             elif self.getChar(coord) == '%': # wall
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
-                    if bestPath is None or len(path) < len(bestPath):
+                    if bestPath is None or priority < bestHeur:
                         bestPath = path[:]
+                        bestHeur = priority
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited:
                         heur = len(path + direction) + self.greedy_manhattan_distance(adj, self.goalPos)
@@ -156,18 +158,19 @@ class Maze(object):
         pq = PriorityQueue(maxsize=0)
         pq.put_nowait((self.euclidean_heuristic(self.currPos, self.goalPos), (self.currPos, [], set())))
         bestPath = None
+        bestHeur = None
         while not pq.empty():
             priority, curr = pq.get_nowait()
             coord, path, visited = curr
             visited = visited.copy()
             visited.add(coord)
-            if bestPath is not None and len(path) >= len(bestPath):
+            if bestPath is not None and priority >= bestHeur:
                 pass
             elif self.getChar(coord) == '%': # wall
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
-                    if bestPath is None or len(path) < len(bestPath):
+                    if bestPath is None or priority < bestHeur:
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited:
@@ -255,6 +258,6 @@ def printMazeCasesPart11(f, name, runDFS=True, runBFS=True, runGreedy=True, runA
 with open("mediumMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Medium Maze")
 with open("bigMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Big Maze", False, True, False, False)
+    printMazeCasesPart11(f, "Big Maze", False, True, False, True)
 with open("openMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Open Maze")
+    printMazeCasesPart11(f, "Open Maze", False, False, False, False)
