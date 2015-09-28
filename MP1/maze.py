@@ -50,28 +50,8 @@ class Maze(object):
                 return path
             else: # recursive case
                 for adj, direction in self.adjacent(coord):
-                    if adj not in visited:
+                    if adj not in visited and self.getChar(adj) != '%':
                         queue.append((adj, path + direction))
-        return [] # impossible
-
-    def dfs_bad(self):
-        # returns a list of coords that compose path
-        # directions: "N", "E", "S", "W"
-        # return self._dfs([self.currPos,], [], [])
-        stack = [(self.currPos, []),]
-        visited = set()
-        while len(stack) > 0:
-            coord, path = stack.pop()
-            visited.add(coord)
-            if self.getChar(coord) == '%': # wall
-                pass
-            elif self.getChar(coord) == '.': # goal
-                print self.debug(path) # debug
-                return path
-            else: # recursive case
-                for adj, direction in self.adjacent(coord):
-                    if adj not in visited:
-                        stack.append((adj, path + direction))
         return [] # impossible
 
     def dfs(self):
@@ -90,10 +70,12 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
+                    print "Found a path:", path
                     if bestPath is None or len(path) < len(bestPath):
+                        print "Is best path"
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
-                    if adj not in visited:
+                    if adj not in visited and self.getChar(adj) != '%':
                         stack.append((adj, path + direction, visited))
         print self.debug(bestPath) # debug
         return bestPath
@@ -112,11 +94,13 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
+                    print "Found a path:", path
                     if bestPath is None or len(path) < len(bestPath):
+                        print "Is best path"
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     aboutToAppend = []
-                    if adj not in visited:
+                    if adj not in visited and self.getChar(adj) != '%':
                         aboutToAppend.append(((adj, path + direction, visited), self.greedy_manhattan_distance(adj, self.goalPos)))
                     # sort by manhattan distance
                     aboutToAppend = sorted(aboutToAppend, key=lambda (el, dist): dist, reverse=True)
@@ -142,11 +126,13 @@ class Maze(object):
                 pass
             else: # recursive case
                 if self.getChar(coord) == '.': # goal
-                    if bestPath is None or priority < bestHeur:
+                    print "Found a path:", path
+                    if bestPath is None or len(path) < len(bestPath):
+                        print "Is best path"
                         bestPath = path[:]
                         bestHeur = priority
                 for adj, direction in self.adjacent(coord):
-                    if adj not in visited:
+                    if adj not in visited and self.getChar(adj) != '%':
                         heur = len(path + direction) + self.greedy_manhattan_distance(adj, self.goalPos)
                         pq.put_nowait((heur, (adj, path + direction, visited)))
         print self.debug(bestPath) # debug
@@ -173,7 +159,7 @@ class Maze(object):
                     if bestPath is None or priority < bestHeur:
                         bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
-                    if adj not in visited:
+                    if adj not in visited and self.getChar(adj) != '%':
                         heur = self.calculate_penalty(path + direction, forwardPenalty, turnPenalty) + self.euclidean_heuristic(adj, self.goalPos)
                         pq.put_nowait((heur, (adj, path + direction, visited)))
         print self.debug(bestPath) # debug
@@ -260,4 +246,4 @@ with open("mediumMaze.txt", 'r') as f:
 with open("bigMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Big Maze", False, True, False, True)
 with open("openMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Open Maze", False, False, False, False)
+    printMazeCasesPart11(f, "Open Maze", False, False, False, True)
