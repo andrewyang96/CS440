@@ -154,7 +154,7 @@ class Maze(object):
         print self.debug(bestPath) # debug
         return bestPath
 
-    def a_star_penalize(self, forwardPenalty, turnPenalty, manhattanHeurOnly=True):
+    def a_star_penalize(self, forwardPenalty, turnPenalty):
         # part 1.2
         # using euclidean heuristic (not manhattan)
         pq = PriorityQueue(maxsize=0)
@@ -179,7 +179,7 @@ class Maze(object):
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
-                        heur = self.calculate_penalty(path + direction, forwardPenalty, turnPenalty) * (not manhattanHeurOnly) + self.manhattan_distance(adj, self.goalPos)
+                        heur = self.calculate_penalty(path + direction, forwardPenalty, turnPenalty) + self.manhattan_distance(adj, self.goalPos) * forwardPenalty
                         if bestPath is None or heur < bestHeur: # preselect based on heuristic
                             pq.put_nowait((heur, (adj, path + direction, visited)))
         print "Num Nodes:", numNodes
@@ -268,23 +268,18 @@ def printMazeCasesPart12(f, name):
 
     m = Maze(f)
 
-    print "Forward: 2, Turn: 1, Manhattan"
+    print "Forward: 2, Turn: 1"
     twoone = m.a_star_penalize(2, 1)
     print "Path:", twoone
     print
 
-    print "Forward: 2, Turn: 1, Manhattan PLUS path dist"
-    twoone = m.a_star_penalize(2, 1, False)
-    print "Path:", twoone
-    print
-
-    print "Forward: 1, Turn: 2, Manhattan"
+    print "Forward: 1, Turn: 2"
     onetwo = m.a_star_penalize(1, 2)
     print "Path:", onetwo
     print
 
-    print "Forward: 1, Turn: 2, Manhattan PLUS path dist"
-    onetwo = m.a_star_penalize(1, 2, False)
+    print "Forward: 1, Turn: 0"
+    onetwo = m.a_star_penalize(3, 2)
     print "Path:", onetwo
     print
 
