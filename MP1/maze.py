@@ -125,6 +125,30 @@ class Maze(object):
         print self.debug(bestPath) # debug
         return bestPath
 
+    def a_star(self):
+        # like BFS, but puts coords with lowest heuristic (path length + manhattan dist to goal) up front
+        pq = PriorityQueue(maxsize=0)
+        pq.put_nowait((self.greedy_manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
+        bestPath = None
+        while not pq.empty():
+            priority, curr = pq.get_nowait()
+            coord, path, visited = curr
+            visited = visited.copy()
+            visited.add(coord)
+            if bestPath is not None and len(path) >= len(bestPath):
+                pass
+            elif self.getChar(coord) == '%': # wall
+                pass
+            else: # recursive case
+                if self.getChar(coord) == '.': # goal
+                    if bestPath is None or len(path) < len(bestPath):
+                        bestPath = path[:]
+                for adj, direction in self.adjacent(coord):
+                    if adj not in visited:
+                        pq.put_nowait((len(path + direction) + self.greedy_manhattan_distance(adj, self.goalPos), (adj, path + direction, visited)))
+        print self.debug(bestPath) # debug
+        return bestPath
+
     def greedy_manhattan_distance(self, currPos, goalPos):
         return abs(currPos[0] - goalPos[0]) + abs(currPos[1] - goalPos[1])
 
