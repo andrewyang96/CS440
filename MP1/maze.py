@@ -222,5 +222,31 @@ class Maze(object):
         """To string method."""
         return "\n".join(["".join(line) for line in self.maze])
 
-with open("mediumMaze.txt", 'r') as f:
+def printMazeCases(f):
+    print "Medium Maze"
+    print '-'*80
+    
     m = Maze(f)
+    
+    print "DFS"
+    dfs = m.dfs()
+    print "Path:", dfs
+    print
+    
+    print "BFS"
+    bfs = m.bfs()
+    print "Path:", bfs
+    print
+    
+    print "Greedy Best-First Search"
+    gbfs = m.greedy()
+    print "Path:", gbfs
+    print
+    
+    print "A*"
+    astar = m.a_star()
+    print "Path:", astar
+    print
+
+with open("mediumMaze.txt", 'r') as f:
+    printMazeCases(f)
