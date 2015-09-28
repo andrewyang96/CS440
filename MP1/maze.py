@@ -222,31 +222,39 @@ class Maze(object):
         """To string method."""
         return "\n".join(["".join(line) for line in self.maze])
 
-def printMazeCases(f):
-    print "Medium Maze"
+def printMazeCasesPart11(f, name, runDFS=True, runBFS=True, runGreedy=True, runAStar=True):
+    print name
     print '-'*80
     
     m = Maze(f)
-    
-    print "DFS"
-    dfs = m.dfs()
-    print "Path:", dfs
-    print
-    
-    print "BFS"
-    bfs = m.bfs()
-    print "Path:", bfs
-    print
-    
-    print "Greedy Best-First Search"
-    gbfs = m.greedy()
-    print "Path:", gbfs
-    print
-    
-    print "A*"
-    astar = m.a_star()
-    print "Path:", astar
-    print
+
+    if runDFS:
+        print "DFS"
+        dfs = m.dfs()
+        print "Path:", dfs
+        print
+
+    if runBFS:
+        print "BFS"
+        bfs = m.bfs()
+        print "Path:", bfs
+        print
+
+    if runGreedy:
+        print "Greedy Best-First Search"
+        gbfs = m.greedy()
+        print "Path:", gbfs
+        print
+
+    if runAStar:
+        print "A*"
+        astar = m.a_star()
+        print "Path:", astar
+        print
 
 with open("mediumMaze.txt", 'r') as f:
-    printMazeCases(f)
+    printMazeCasesPart11(f, "Medium Maze")
+with open("bigMaze.txt", 'r') as f:
+    printMazeCasesPart11(f, "Big Maze", False, True, False, False)
+with open("openMaze.txt", 'r') as f:
+    printMazeCasesPart11(f, "Open Maze")
