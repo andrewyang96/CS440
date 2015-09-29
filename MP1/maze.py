@@ -98,13 +98,13 @@ class Maze(object):
     def greedy(self):
         # like DFS, but puts coords closest to goal up front
         pq = PriorityQueue(maxsize=0)
-        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
+        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [])))
+        visited = set()
         bestPath = None
         numNodes = 0
         while not pq.empty():
             priority, curr = pq.get_nowait()
-            coord, path, visited = curr
-            visited = visited.copy()
+            coord, path = curr
             visited.add(coord)
             if bestPath is not None and len(path) >= len(bestPath):
                 pass
@@ -120,7 +120,7 @@ class Maze(object):
                         numNodes += 1
                         heur = self.manhattan_distance(adj, self.goalPos)
                         if bestPath is None: # preselect based on heuristic
-                            pq.put_nowait((heur, (adj, path + direction, visited)))
+                            pq.put_nowait((heur, (adj, path + direction)))
         return [] # impossible
 
     def a_star(self):
@@ -432,7 +432,7 @@ with open("mediumMaze.txt", 'r') as f:
 with open("bigMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Big Maze")
 with open("openMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Open Maze", True, False, False, True)
+    printMazeCasesPart11(f, "Open Maze", True, False, True, True)
 
 # part 1.2
 with open("smallTurns.txt", 'r') as f:
