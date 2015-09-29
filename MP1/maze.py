@@ -214,6 +214,8 @@ class Maze(object):
         return accum
 
     def debug(self, path):
+        if path is None:
+            return "None!"
         # debug with given path
         visited = set()
         currCoord = self.currPos
@@ -252,7 +254,48 @@ class GhostMaze(Maze):
                 direction *= -1
                 nextGhostPos = (currGhostPos[0], currGhostPos[1] + direction)
             currGhostPos = nextGhostPos
-        print self.ghostPosList
+
+    def getGhostPos(self, path):
+        # get curr ghost position based on length of path
+        return self.ghostPosList[len(path) % (self.numGhostSpaces*2)]
+
+    def a_star_ghost(self):
+        pq = PriorityQueue(maxsize=0)
+        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
+        bestPath = None
+        bestHeur = None
+        numNodes = 0
+        backwardsPenalty = len(self.maze) * len(self.maze[0]) / 2 # backwards penalty to allow loitering
+        while not pq.empty():
+            priority, curr = pq.get_nowait()
+            coord, path, visited = curr
+            visited = visited.copy()
+            visited.add(coord)
+            if bestPath is not None and priority >= bestHeur:
+                pass
+            elif self.getChar(coord) == '%': # wall
+                pass
+            else: # recursive case
+                if self.getChar(coord) == '.': # goal
+                    print "Found a path:", path
+                    if bestPath is None or len(path) < len(bestPath):
+                        print "Is best path"
+                        bestPath = path[:]
+                        bestHeur = priority
+                for adj, direction in self.adjacent(coord):
+                    if self.getChar(adj) != '%':
+                        numNodes += 1
+                        heur = len(path + direction) + self.manhattan_distance(adj, self.goalPos)
+                        if adj in visited:
+                            heur += backwardsPenalty
+                        if bestPath is None or heur < bestHeur: # preselect based on heuristic
+                            if adj != self.getGhostPos(path + direction) and (adj != self.getGhostPos(path) and coord != self.getGhostPos(path + direction)):
+                                # check that next step won't put pacman on same square as ghost, or won't cross paths with ghost
+                                pq.put_nowait((heur, (adj, path + direction, visited)))
+        print "Num Nodes:", numNodes
+        print self.debug(bestPath) # debug
+        return bestPath
+        
 
 def printMazeCasesPart11(f, name, runDFS=True, runBFS=True, runGreedy=True, runAStar=True):
     print name
@@ -310,6 +353,12 @@ def printMazeCases13(f, name):
     print '-'*80
 
     m = GhostMaze(f) # change classes
+
+    print "Solution"
+    soln = m.a_star_ghost()
+    print "Path:", soln
+    print
+    
 """
 # part 1.1
 with open("mediumMaze.txt", 'r') as f:
