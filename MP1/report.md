@@ -637,3 +637,14 @@ Part 1.3 Results
 	% % % % %    % %% % % %  % %% % %  .%
 	%         % %   %       %     %   %P%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Contributions
+-------------
+
+**Sanil Pruthi (pruthi2)**
+
+Wrote BFS and Greedy BFS algorithms, and worked with Andrew to develop modified heuristics for part 1.2, as well as wrote the majority of the report.
+
+**Andrew Yang (ayang14)**
+
+Wrote DFS and A* algorithms, developed heuristics for part 1.2, and modified A* algorithm for parts 1.2 and 1.3.
