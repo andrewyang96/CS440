@@ -48,9 +48,14 @@ class Maze(object):
         queue = [(self.currPos, []),]
         visited = set()
         numNodes = 0
+        # maxPathLen = 0 # debug
         while len(queue) > 0:
             coord, path = queue.pop(0)
             visited.add(coord)
+            #if len(path) > maxPathLen: # debug
+            #    maxPathLen = len(path)
+            #    print "New max path length", maxPathLen
+            
             if self.getChar(coord) == '%': # wall
                 pass
             elif self.getChar(coord) == '.': # goal
@@ -84,16 +89,11 @@ class Maze(object):
                     print "Num Nodes:", numNodes
                     print self.debug(path)
                     return path # return on first path found
-                    print "Found a path:", path
-                    if bestPath is None or len(path) < len(bestPath):
-                        print "Is best path"
-                        bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
                         stack.append((adj, path + direction, visited))
-        print self.debug(bestPath) # debug
-        return bestPath
+        return [] # impossible
 
     def greedy(self):
         # like DFS, but puts coords closest to goal up front
@@ -115,18 +115,13 @@ class Maze(object):
                     print "Num Nodes:", numNodes
                     print self.debug(path)
                     return path # return on first path found
-                    print "Found a path:", path
-                    if bestPath is None or len(path) < len(bestPath):
-                        print "Is best path"
-                        bestPath = path[:]
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
                         heur = self.manhattan_distance(adj, self.goalPos)
-                        if bestPath is None or heur < bestHeur: # preselect based on heuristic
+                        if bestPath is None: # preselect based on heuristic
                             pq.put_nowait((heur, (adj, path + direction, visited)))
-        print self.debug(bestPath) # debug
-        return bestPath
+        return [] # impossible
 
     def a_star(self):
         # like BFS, but puts coords with lowest heuristic (path length + manhattan dist to goal) up front
@@ -154,7 +149,7 @@ class Maze(object):
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
-                        heur = len(path + direction) + self.manhattan_distance(adj, self.goalPos)
+                        heur = len(path + direction) / 2 + self.manhattan_distance(adj, self.goalPos)
                         if bestPath is None or heur < bestHeur: # preselect based on heuristic
                             pq.put_nowait((heur, (adj, path + direction, visited)))
         print "Num Nodes:", numNodes
@@ -431,14 +426,13 @@ def printMazeCases13(f, name, dirname):
     print "Making animations"
     print m.createAnimation(dirname, soln)
 
-"""
 # part 1.1
 with open("mediumMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Medium Maze")
 with open("bigMaze.txt", 'r') as f:
     printMazeCasesPart11(f, "Big Maze")
 with open("openMaze.txt", 'r') as f:
-    printMazeCasesPart11(f, "Open Maze", True, False, False, False)
+    printMazeCasesPart11(f, "Open Maze", True, False, False, True)
 
 # part 1.2
 with open("smallTurns.txt", 'r') as f:
@@ -453,3 +447,4 @@ with open("mediumGhost.txt", 'r') as f:
     printMazeCases13(f, "Medium Ghost", "mediumGhost")
 with open("bigGhost.txt", 'r') as f:
     printMazeCases13(f, "Big Ghost", "bigGhost")
+"""
