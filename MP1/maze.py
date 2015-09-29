@@ -126,14 +126,14 @@ class Maze(object):
     def a_star(self):
         # like BFS, but puts coords with lowest heuristic (path length + manhattan dist to goal) up front
         pq = PriorityQueue(maxsize=0)
-        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [], set())))
+        pq.put_nowait((self.manhattan_distance(self.currPos, self.goalPos), (self.currPos, [])))
+        visited = set()
         bestPath = None
         bestHeur = None
         numNodes = 0
         while not pq.empty():
             priority, curr = pq.get_nowait()
-            coord, path, visited = curr
-            visited = visited.copy()
+            coord, path = curr
             visited.add(coord)
             if bestPath is not None and priority >= bestHeur:
                 pass
@@ -151,7 +151,7 @@ class Maze(object):
                         numNodes += 1
                         heur = len(path + direction) / 2 + self.manhattan_distance(adj, self.goalPos)
                         if bestPath is None or heur < bestHeur: # preselect based on heuristic
-                            pq.put_nowait((heur, (adj, path + direction, visited)))
+                            pq.put_nowait((heur, (adj, path + direction)))
         print "Num Nodes:", numNodes
         print self.debug(bestPath) # debug
         return bestPath
