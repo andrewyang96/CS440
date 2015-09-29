@@ -235,7 +235,7 @@ class Maze(object):
             else:
                 print "WARNING: something wrong with debug"
             visited.add(currCoord)
-        return "\n".join(["".join(['V' if (row, col) in visited else char for col, char in enumerate(line)]) for row, line in enumerate(self.maze)])
+        return "\n".join(["".join(['.' if (row, col) in visited and char != 'P' else char for col, char in enumerate(line)]) for row, line in enumerate(self.maze)])
     
     def __str__(self):
         """To string method."""
@@ -430,7 +430,7 @@ def printMazeCases13(f, name, dirname):
     print "Path:", soln
     print "Making animations"
     print m.createAnimation(dirname, soln)
-    
+
 """
 # part 1.1
 with open("mediumMaze.txt", 'r') as f:
