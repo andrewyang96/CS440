@@ -149,7 +149,7 @@ class Maze(object):
                 for adj, direction in self.adjacent(coord):
                     if adj not in visited and self.getChar(adj) != '%':
                         numNodes += 1
-                        heur = len(path + direction) / 2 + self.manhattan_distance(adj, self.goalPos)
+                        heur = len(path + direction) + self.manhattan_distance(adj, self.goalPos)
                         if bestPath is None or heur < bestHeur: # preselect based on heuristic
                             pq.put_nowait((heur, (adj, path + direction)))
         print "Num Nodes:", numNodes
