@@ -1,4 +1,6 @@
 from Queue import PriorityQueue
+import os
+from PIL import Image, ImageDraw
 
 class Maze(object):
     """
@@ -295,7 +297,76 @@ class GhostMaze(Maze):
         print "Num Nodes:", numNodes
         print self.debug(bestPath) # debug
         return bestPath
+
+    def createAnimation(self, dirname, path):
+        curdir = os.path.dirname(os.path.realpath(__file__))
+        targetdir = os.path.join(curdir, dirname)
+        if not os.path.exists(targetdir):
+            os.mkdir(targetdir)
+        print "Found target directory"
+        # now create frames
+        fnameLen = len(path) / 10 + 1
+        dim = (len(self.maze[0]), len(self.maze))
+        currCoord = self.currPos
+        visited = set()
+        for i, direction in enumerate(path):
+            print "Making frame for index", i
+            # get ghost pos
+            currGhostPos = self.ghostPosList[i % (self.numGhostSpaces*2)]
+            # setup filename
+            frame = drawFrame(dim, currCoord, self.maze, visited, currGhostPos)
+            fname = os.path.join(targetdir, str(i).zfill(fnameLen) + ".png")
+            frame.save(fname, "PNG")
+            visited.add(currCoord)
+            # move pacman
+            if direction == 'E':
+                currCoord = (currCoord[0], currCoord[1]+1)
+            elif direction == 'S':
+                currCoord = (currCoord[0]+1, currCoord[1])
+            elif direction == 'W':
+                currCoord = (currCoord[0], currCoord[1]-1)
+            elif direction == 'N':
+                currCoord = (currCoord[0]-1, currCoord[1])
+            else:
+                raise Exception("Direction not valid: " + direction)
+        # final frame
+        currGhostPos = self.ghostPosList[len(path) % (self.numGhostSpaces*2)]
+        frame = drawFrame(dim, currCoord, self.maze, visited, currGhostPos)
+        fname = os.path.join(targetdir, str(i+1).zfill(fnameLen) + ".png")
+        frame.save(fname, "PNG")
+        print "Done!"
         
+def drawFrame(dim, currCoord, mazeArr, visited, ghostPos):
+    # walls are black (0,0,0), pacman is yellow (255,255,0), ghost is red (255,0,0), goal is green (0,255,0)
+    # background is gray (128,128,128), visited tiles are light gray (192,192,192)
+    # each tile is 16x16
+    img = Image.new("RGB", (dim[0]*16,dim[1]*16), "black")
+    for i, row in enumerate(mazeArr):
+        for j, col in enumerate(row):
+            char = mazeArr[i][j]
+            color = ()
+            coord = (i, j)
+            if coord in visited:
+                color = (192, 192, 192) # visited tile
+            else:
+                color = (128, 128, 128) # open tile
+            
+            if char == '%': # wall
+                color = (0, 0, 0)
+            elif char == '.': # goal
+                color = (0, 255, 0)
+            elif coord == currCoord: # pacman current position
+                color = (255, 255, 0)
+            elif coord == ghostPos: # ghost current position
+                color = (255, 0, 0)
+            writeTile(img, coord, color)
+    return img
+
+def writeTile(img, coord, color):
+    pixels = img.load()
+    for i in range(coord[0]*16, (coord[0]+1)*16):
+        for j in range(coord[1]*16, (coord[1]+1)*16):
+            pixels[j,i] = color
 
 def printMazeCasesPart11(f, name, runDFS=True, runBFS=True, runGreedy=True, runAStar=True):
     print name
@@ -348,7 +419,7 @@ def printMazeCasesPart12(f, name):
     print "Path:", onetwo
     print
 
-def printMazeCases13(f, name):
+def printMazeCases13(f, name, dirname):
     print name
     print '-'*80
 
@@ -357,7 +428,8 @@ def printMazeCases13(f, name):
     print "Solution"
     soln = m.a_star_ghost()
     print "Path:", soln
-    print
+    print "Making animations"
+    print m.createAnimation(dirname, soln)
     
 """
 # part 1.1
@@ -376,8 +448,8 @@ with open("bigTurns.txt", 'r') as f:
 """
 # part 1.3
 with open("smallGhost.txt", 'r') as f:
-    printMazeCases13(f, "Small Ghost")
+    printMazeCases13(f, "Small Ghost", "smallGhost")
 with open("mediumGhost.txt", 'r') as f:
-    printMazeCases13(f, "Medium Ghost")
+    printMazeCases13(f, "Medium Ghost", "mediumGhost")
 with open("bigGhost.txt", 'r') as f:
-    printMazeCases13(f, "Big Ghost")
+    printMazeCases13(f, "Big Ghost", "bigGhost")
