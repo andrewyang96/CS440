@@ -1,0 +1,5 @@
+search order: adverb->emotion->body->adjective->interjection->verb
+NAE->MAD->EYE->WEE->SAY->DYE (found result: NWESAYDYE)
+		          ->MAN->DYE (found result: NWEMANDYE)
+             ->NEE->SAY->DYE (found result: NNESAYDYE)
+                  ->MAN->DYE (found result: NNEMANDYE)

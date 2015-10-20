@@ -1,0 +1,4 @@
+AAH->BRA->ART->BAR->(found result: BAARATH)
+        ->IRE->BAR->(found result: BAIRAEH)
+->ARM->BAR->(found result: BAARAMH)
+URN->BAR->(found result: BAURANH)

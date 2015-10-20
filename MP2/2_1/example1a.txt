@@ -1,0 +1,4 @@
+B->A->A->R->A->T->H->(found result: BAARATH)
+               M->H->(found result: BAARAMH)
+      U->R->A->N->H->(found result: BAURANH)
+      I->R->A->E->H->(found result: BAIRAEH)

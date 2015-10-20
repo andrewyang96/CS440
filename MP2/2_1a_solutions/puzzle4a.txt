@@ -1,0 +1,14 @@
+search order: index order of the letters in the result array
+H->E->A->I->T->Y->R->backtrack
+    ->D->I->T->Y->R->E (found result: HEDITYRE)
+    ->O->I->T->Y->R->backtrack
+    ->T->I->T->Y->R->E (found result: HETITYRE)
+    ->L->I->T->Y->R->E (found result: HELITYRE)
+
+
+
+
+
+
+
+

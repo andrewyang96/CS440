@@ -1,0 +1,26 @@
+search order: index order of the letters in the result array
+B->H->T->T->Y->O->I->E->backtrack
+          ->N->O->I->E->backtrack
+S->H->T->T->Y->O->I->E->backtrack
+          ->N->O->I->E->backtrack
+G->H->T->T->Y->O->I->E->backtrack
+          ->N->O->I->E->backtrack
+F->H->T->T->Y->O->I->E->backtrack
+		  ->N->O->I->E->backtrack
+D->H->T->T->Y->O->I->E->backtrack
+          ->N->O->I->E->backtrack
+T->H->T->T->Y->O->I->E->N (found result: THTTYOIEN)
+          ->N->O->I->E->N (found result: THTTNOIEN)
+P->H->T->T->Y->O->I->E->backtrack
+          ->N->O->I->E->backtrack
+I->H->T->T->Y->O->I->E->N (found result: IHTTYOIEN)
+          ->N->O->I->E->N (found result: IHTTNOIEN)
+
+
+
+
+
+
+
+
+

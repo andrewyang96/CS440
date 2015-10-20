@@ -1,0 +1,5 @@
+search order: index order of the letters in the result array
+H->S->I->E->I->A->I->W->N->P->S (found result: HSIAIWNPS)
+                         ->C->S (found result: HSIAIWNCS)
+             ->O->I->W->N->Y->S (found result: HSIOIWNYS)
+                         ->D->S (found result: HSIOIWNDS)

@@ -1,0 +1,3 @@
+search order: index order of the letters in the result array
+A->S->A->L->U->L->P->E->A (found result: ASULPEA)
+                   ->I->E (found result: ASULPIE)

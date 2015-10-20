@@ -1,0 +1,4 @@
+search order: body,pronouon,computer,interjection,verb,noun
+EYE->HER->HIT->HEY->LIE->IRE (found result: HELITYRE)
+				  ->DIE->IRE (found result: HEDITYRE)
+				  ->TIE->IRE (found result: HETITYRE)

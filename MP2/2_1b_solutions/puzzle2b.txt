@@ -1,0 +1,5 @@
+search order: pronouon->palindrome->math->interjection->verb->noun
+HIS->SIS->SIN->HAW->SOW->SOD (found result: HSIOIWNDS)
+ 					   ->SAC (found result: HSIAIWNCS)
+					   ->SAP (found result: HSIAIWNPS)
+					   ->SOY (found result: HSIOIWNYS)

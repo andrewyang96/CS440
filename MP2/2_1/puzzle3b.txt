@@ -1,0 +1,3 @@
+search order: nature->food->animal->interjection->noun
+ALP->PIE->ASP->SUP->LIE (found result: ASULPIE)
+				  ->LEA (found result: ASULPEA)

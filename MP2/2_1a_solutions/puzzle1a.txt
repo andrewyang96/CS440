@@ -1,0 +1,5 @@
+search order: index order of the letters in the result array
+N->W->E->M->A->N->D->Y->E (found result: NWEMANDYE)
+       ->S->A->Y->D->Y->E (found result: NWESAYDYE)
+ ->N->E->M->A->N->D->Y->E (found result: NNEMANDYE)
+       ->S->A->Y->D->Y->E (found result: NNESAYDYE)

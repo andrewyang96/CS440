@@ -1,0 +1,5 @@
+search order: number,container,music,body,adverb,animal,noun
+TEN->TIN->TIE->TOE->NON->HEN->TON (found result: THTTNOIEN)
+					        ->ION (found result: IHTTNOIEN)
+			      ->YON->HEN->TON (found result: THTTYOIEN)
+                            ->ION (found result: IHTTYOIEN)
