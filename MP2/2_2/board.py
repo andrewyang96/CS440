@@ -103,7 +103,44 @@ class GameState(object):
                 bestVal = compare(bestVal, val)
         return bestVal
 
+    def alphabeta(self, depth=10, alpha=None, beta=None):
+        # perform an alpha-beta tree search from this state
+        if depth <= 0:
+            return self.calculateScore()
+        nextStates = self.findNextStates()
+        if len(nextStates) == 0:
+            return self.calculateScore()
+        if self.turn == 1:
+            # maximizing
+            compare = max
+        elif self.turn == -1:
+            compare = min
+        else:
+            raise ValueError("self.turn is invalid: {0}".format(self.turn))
+        val = None
+        for nextState in nextStates:
+            if val is None:
+                val = nextState.alphabeta(depth-1, alpha, beta)
+            else:
+                val = compare(val, nextState.alphabeta(depth-1, alpha, beta))
+            if self.turn == 1:
+                if alpha is None:
+                    alpha = val
+                else:
+                    alpha = max(alpha, val)
+            else: # self.turn == -1
+                if beta is None:
+                    beta = val
+                else:
+                    beta = min(beta, val)
+            if beta <= alpha:
+                break # beta cut-off
+        return val
+
 if __name__ == "__main__":
     board = boardFromFile("Westerplatte.txt")
     initState = GameState(board)
+    print "Minimax (depth=3):"
     print initState.minimax()
+    print "Alpha-beta (depth=10):"
+    print initState.alphabeta()
