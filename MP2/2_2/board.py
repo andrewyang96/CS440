@@ -23,7 +23,7 @@ class GameState(object):
             self.state = [[0 for col in board] for row in board]
         else:
             self.state = state
-        self.turn = 1
+        self.turn = turn
 
     def calculateScores(self):
         # returns (maximizing Player's score, minimizing Player's score)
@@ -115,7 +115,7 @@ class GameState(object):
                 bestVal = compare(bestVal, val)
         return bestVal
 
-    def alphabeta(self, depth=10, alpha=None, beta=None, counter=None):
+    def alphabeta(self, depth=5, alpha=None, beta=None, counter=None):
         # perform an alpha-beta tree search from this state
         if counter is not None:
             counter.increment()
@@ -147,7 +147,7 @@ class GameState(object):
                     beta = val
                 else:
                     beta = min(beta, val)
-            if beta <= alpha:
+            if alpha is not None and beta is not None and beta <= alpha:
                 break # beta cut-off
         return val
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     print initState.minimax(counter=minimaxExpanded)
     print "Nodes expanded:", minimaxExpanded
     
-    print "Alpha-beta (depth=10):"
+    print "Alpha-beta (depth=5):"
     alphabetaExpanded = Counter()
     print initState.alphabeta(counter=alphabetaExpanded)
     print "Nodes expanded:", alphabetaExpanded
