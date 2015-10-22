@@ -6,6 +6,16 @@ def boardFromFile(filename):
             board.append(row)
         return board
 
+class Counter(object):
+    def __init__(self):
+        self.count = 0
+    def increment(self):
+        self.count += 1
+    def __str__(self):
+        return str(self.count)
+    def __repr__(self):
+        return self.count
+
 class GameState(object):
     def __init__(self, board, turn=1, state=None):
         self.board = board
@@ -79,8 +89,10 @@ class GameState(object):
                     newState[row][c] = self.turn
         return GameState(self.board, -self.turn, newState)
 
-    def minimax(self, depth=3):
+    def minimax(self, depth=3, counter=None):
         # perform a minimax tree search from this state
+        if counter is not None:
+            counter.increment()
         if depth <= 0:
             return self.calculateScore()
         nextStates = self.findNextStates()
@@ -96,15 +108,17 @@ class GameState(object):
             raise ValueError("self.turn is invalid: {0}".format(self.turn))
         bestVal = None
         for nextState in nextStates:
-            val = nextState.minimax(depth-1)
+            val = nextState.minimax(depth-1, counter)
             if bestVal is None:
                 bestVal = val
             else:
                 bestVal = compare(bestVal, val)
         return bestVal
 
-    def alphabeta(self, depth=10, alpha=None, beta=None):
+    def alphabeta(self, depth=10, alpha=None, beta=None, counter=None):
         # perform an alpha-beta tree search from this state
+        if counter is not None:
+            counter.increment()
         if depth <= 0:
             return self.calculateScore()
         nextStates = self.findNextStates()
@@ -120,9 +134,9 @@ class GameState(object):
         val = None
         for nextState in nextStates:
             if val is None:
-                val = nextState.alphabeta(depth-1, alpha, beta)
+                val = nextState.alphabeta(depth-1, alpha, beta, counter)
             else:
-                val = compare(val, nextState.alphabeta(depth-1, alpha, beta))
+                val = compare(val, nextState.alphabeta(depth-1, alpha, beta, counter))
             if self.turn == 1:
                 if alpha is None:
                     alpha = val
@@ -141,6 +155,11 @@ if __name__ == "__main__":
     board = boardFromFile("Westerplatte.txt")
     initState = GameState(board)
     print "Minimax (depth=3):"
-    print initState.minimax()
+    minimaxExpanded = Counter()
+    print initState.minimax(counter=minimaxExpanded)
+    print "Nodes expanded:", minimaxExpanded
+    
     print "Alpha-beta (depth=10):"
-    print initState.alphabeta()
+    alphabetaExpanded = Counter()
+    print initState.alphabeta(counter=alphabetaExpanded)
+    print "Nodes expanded:", alphabetaExpanded
