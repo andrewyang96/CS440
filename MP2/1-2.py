@@ -56,7 +56,7 @@ def get_dist(p1, pt_arr, best_dist):
 	pt = point(a_fin, b_fin)
 	connect = line(p1.x, p1.y, a_fin, b_fin)
 	line_arr.append(connect)
-	
+
 	#return fin_pt
 	#print 'Final point is:', pt.x, pt.y
 	#print 'First line is:', connect.x1, connect.y1, connect.x2, connect.y2
@@ -69,6 +69,16 @@ def get_dist(p1, pt_arr, best_dist):
 
 # 	p1.x
 # 	sqrt(x)
+def check_for_intersect(p1,p2,line_arr):
+	#for map_line in line_arr:
+	
+	#ua = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)(y2-y1))
+
+	#ub = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)(y2-y1))
+	#if(ua > 0 and ua < 1 and ub > 0 and ub < 1):
+	#lines intersect, don't proceed 
+
+	#check if line produced by p1 and p2 intersects with any other line in array 
 
 class point:
 	def __init__(self, x, y):
