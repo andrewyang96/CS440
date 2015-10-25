@@ -211,37 +211,49 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
         counter = Counter()
         playMove = None
         print "Turn", turnNum
+        print >> sys.stderr, "Turn", turnNum
         if currState.turn == 1:
             if maxUseAlphabeta:
                 print "Player 1 using Alphabeta"
+                print >> sys.stderr, "Player 1 using Alphabeta"
                 playMove = lambda counter: currState.alphabeta(depth=alphabetaDepth, counter=counter)
             else:
                 print "Player 1 using Minimax"
+                print >> sys.stderr, "Player 1 using Minimax"
                 playMove = lambda counter: currState.minimax(depth=minimaxDepth, counter=counter)
         else:
             if minUseAlphabeta:
                 print "Player 2 using Alphabeta"
+                print >> sys.stderr, "Player 2 using Alphabeta"
                 playMove = lambda counter: currState.alphabeta(depth=alphabetaDepth, counter=counter)
             else:
                 print "Player 2 using Minimax"
+                print >> sys.stderr, "Player 2 using Minimax"
                 playMove = lambda counter: currState.minimax(depth=minimaxDepth, counter=counter)
         startTime = time.clock()
         bestHeur, nextState = playMove(counter)
         elapsed = time.clock() - startTime
         print "Best Heuristic:", bestHeur
+        print >> sys.stderr, "Best Heuristic:", bestHeur
         print "Nodes Expanded:", counter
+        print >> sys.stderr, "Nodes Expanded:", counter
         print "Time Taken:", elapsed
+        print >> sys.stderr, "Time Taken:", elapsed
         print "Best Next State:"
         print nextState
+        print >> sys.stderr, "Best Next State:"
+        print >> sys.stderr, nextState
         print
         currState = nextState
         turnNum += 1
-    print "Done!" 
+    print "Done!"
+    print >> sys.stderr, "Done!"
 
 if __name__ == "__main__":
     if not os.path.exists("results"):
         os.mkdir("results")
-    boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
+    # boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
+    boards = ["Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
 
     for bname in boards:
         venue = bname.split('.')[0]
@@ -250,21 +262,31 @@ if __name__ == "__main__":
             with stdout_redirected(f):
                 board = boardFromFile(bname)
                 print "Playing on", bname
+                print >> sys.stderr, "Playing on", bname
                 print "\n".join([" ".join([str(num) for num in row]) for row in board])
+                print >> sys.stderr, "\n".join([" ".join([str(num) for num in row]) for row in board])
                 
                 print '='*80
+                print >> sys.stderr, '='*80
                 print "Minimax vs. Minimax"
+                print >> sys.stderr, "Minimax vs. Minimax"
                 playGame(False, False, minimaxDepth=3)
 
                 print '-'*80
+                print >> sys.stderr, '-'*80
                 print "Alphabeta vs. Alphabeta"
+                print >> sys.stderr, "Alphabeta vs. Alphabeta"
                 playGame(True, True, alphabetaDepth=4)
 
                 print '-'*80
+                print >> sys.stderr, '-'*80
                 print "Minimax vs. Alphabeta"
+                print >> sys.stderr, "Minimax vs. Alphabeta"
                 playGame(False, True, 3, 4)
 
                 print '-'*80
+                print >> sys.stderr, '-'*80
                 print "Alphabeta vs. Minimax"
+                print >> sys.stderr, "Alphabeta vs. Minimax"
                 playGame(True, False, 3, 4)
         print "Done processing", bname
