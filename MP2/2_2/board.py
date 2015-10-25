@@ -77,9 +77,9 @@ class GameState(object):
                 # first check for airdrop
                 if st == 0:
                     nextStates.append(self.airdrop(r, c))
-                # then check for blitz
-                if self.checkAdjacent(r, c):
-                    nextStates.append(self.blitz(r, c))
+                    # then check for blitz
+                    if self.checkAdjacent(r, c):
+                        nextStates.append(self.blitz(r, c))
         return nextStates
 
     def checkAdjacent(self, row, col):
@@ -102,6 +102,7 @@ class GameState(object):
 
     def blitz(self, row, col):
         # must check beforehand if (row, col) is adjacent to occupied
+        # also space must be empty
         newState = [x[:] for x in self.state]
         newState[row][col] = self.turn
         # check if adjacent enemy tiles
@@ -138,6 +139,7 @@ class GameState(object):
             val = nextState.minimax(depth-1, counter)[0]
             if bestVal is None:
                 bestVal = val
+                bestState = nextState
             else:
                 if compare(bestVal, val) != bestVal:
                     bestVal = val
@@ -196,19 +198,19 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
         if currState.turn == 1:
             if maxUseAlphabeta:
                 print "Player 1 using Alphabeta"
-                playMove = currState.alphabeta
+                playMove = lambda counter: currState.alphabeta(depth=alphabetaDepth, counter=counter)
             else:
                 print "Player 1 using Minimax"
-                playMove = currState.minimax
+                playMove = lambda counter: currState.minimax(depth=minimaxDepth, counter=counter)
         else:
             if minUseAlphabeta:
                 print "Player 2 using Alphabeta"
-                playMove = currState.alphabeta
+                playMove = lambda counter: currState.alphabeta(depth=alphabetaDepth, counter=counter)
             else:
                 print "Player 2 using Minimax"
-                playMove = currState.minimax
+                playMove = lambda counter: currState.minimax(depth=minimaxDepth, counter=counter)
         startTime = time.clock()
-        bestHeur, nextState = playMove(counter=counter)
+        bestHeur, nextState = playMove(counter)
         elapsed = time.clock() - startTime
         print "Best Heuristic:", bestHeur
         print "Nodes Expanded:", counter
@@ -222,23 +224,18 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
 
 if __name__ == "__main__":
     board = boardFromFile("Westerplatte.txt")
-    print "Alphabeta vs. Alphabeta"
-    playGame(False, False)
-    """
-    initState = GameState(board)
-    print "Minimax (depth=3):"
-    minimaxExpanded = Counter()
-    bestHeur, bestState = initState.minimax(depth=3, counter=minimaxExpanded)
-    print "Best Heuristic:", bestHeur
-    print "Best Next State:"
-    print bestState
-    print "Nodes expanded:", minimaxExpanded
     
-    print "Alpha-beta (depth=5):"
-    alphabetaExpanded = Counter()
-    bestHeur, bestState = initState.alphabeta(depth=5, counter=alphabetaExpanded)
-    print "Best Heuristic:", bestHeur
-    print "Best Next State:"
-    print bestState
-    print "Nodes expanded:", alphabetaExpanded
-    """
+    print "Minimax vs. Minimax"
+    playGame(False, False, minimaxDepth=3)
+
+    print '-'*80
+    print "Alphabeta vs. Alphabeta"
+    playGame(True, True, alphabetaDepth=4)
+
+    print '-'*80
+    print "Minimax vs. Alphabeta"
+    playGame(False, True, 3, 4)
+
+    print '-'*80
+    print "Alphabeta vs. Minimax"
+    playGame(True, False, 3, 4)
