@@ -1,3 +1,5 @@
+import time
+
 def boardFromFile(filename):
     with open(filename, "r") as f:
         board = []
@@ -24,6 +26,30 @@ class GameState(object):
         else:
             self.state = state
         self.turn = turn
+
+    def __str__(self):
+        return "\n".join([" ".join(row) for row in self.letterRepr()])
+
+    def letterRepr(self):
+        ret = []
+        for row in self.state:
+            retRow = []
+            for tile in row:
+                if tile == 1:
+                    retRow.append("F")
+                elif tile == -1:
+                    retRow.append("S")
+                else:
+                    retRow.append("O")
+            ret.append(retRow)
+        return ret
+
+    def isFull(self):
+        for row in self.state:
+            for tile in row:
+                if tile == 0:
+                    return False
+        return True
 
     def calculateScores(self):
         # returns (maximizing Player's score, minimizing Player's score)
@@ -94,10 +120,10 @@ class GameState(object):
         if counter is not None:
             counter.increment()
         if depth <= 0:
-            return self.calculateScore()
+            return (self.calculateScore(), self.state)
         nextStates = self.findNextStates()
         if len(nextStates) == 0:
-            return self.calculateScore()
+            return (self.calculateScore(), self.state)
         if self.turn == 1:
             # maximizing
             compare = max
@@ -107,23 +133,26 @@ class GameState(object):
         else:
             raise ValueError("self.turn is invalid: {0}".format(self.turn))
         bestVal = None
+        bestState = None
         for nextState in nextStates:
-            val = nextState.minimax(depth-1, counter)
+            val = nextState.minimax(depth-1, counter)[0]
             if bestVal is None:
                 bestVal = val
             else:
-                bestVal = compare(bestVal, val)
-        return bestVal
+                if compare(bestVal, val) != bestVal:
+                    bestVal = val
+                    bestState = nextState
+        return (bestVal, bestState)
 
     def alphabeta(self, depth=5, alpha=None, beta=None, counter=None):
         # perform an alpha-beta tree search from this state
         if counter is not None:
             counter.increment()
         if depth <= 0:
-            return self.calculateScore()
+            return (self.calculateScore(), self.state)
         nextStates = self.findNextStates()
         if len(nextStates) == 0:
-            return self.calculateScore()
+            return (self.calculateScore(), self.state)
         if self.turn == 1:
             # maximizing
             compare = max
@@ -132,11 +161,16 @@ class GameState(object):
         else:
             raise ValueError("self.turn is invalid: {0}".format(self.turn))
         val = None
+        bestState = None
         for nextState in nextStates:
             if val is None:
-                val = nextState.alphabeta(depth-1, alpha, beta, counter)
+                val = nextState.alphabeta(depth-1, alpha, beta, counter)[0]
+                bestState = nextState
             else:
-                val = compare(val, nextState.alphabeta(depth-1, alpha, beta, counter))
+                newVal = nextState.alphabeta(depth-1, alpha, beta, counter)[0]
+                if compare(val, newVal) != val:
+                    val = newVal
+                    bestState = nextState
             if self.turn == 1:
                 if alpha is None:
                     alpha = val
@@ -149,17 +183,62 @@ class GameState(object):
                     beta = min(beta, val)
             if alpha is not None and beta is not None and beta <= alpha:
                 break # beta cut-off
-        return val
+        return (val, bestState)
+
+def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabetaDepth=5, counter=None):
+    # allow mix of minimax and alpha-beta pruning
+    currState = GameState(board)
+    turnNum = 1
+    while not currState.isFull():
+        counter = Counter()
+        playMove = None
+        print "Turn", turnNum
+        if currState.turn == 1:
+            if maxUseAlphabeta:
+                print "Player 1 using Alphabeta"
+                playMove = currState.alphabeta
+            else:
+                print "Player 1 using Minimax"
+                playMove = currState.minimax
+        else:
+            if minUseAlphabeta:
+                print "Player 2 using Alphabeta"
+                playMove = currState.alphabeta
+            else:
+                print "Player 2 using Minimax"
+                playMove = currState.minimax
+        startTime = time.clock()
+        bestHeur, nextState = playMove(counter=counter)
+        elapsed = time.clock() - startTime
+        print "Best Heuristic:", bestHeur
+        print "Nodes Expanded:", counter
+        print "Time Taken:", elapsed
+        print "Best Next State:"
+        print nextState
+        print
+        currState = nextState
+        turnNum += 1
+    print "Done!" 
 
 if __name__ == "__main__":
     board = boardFromFile("Westerplatte.txt")
+    print "Alphabeta vs. Alphabeta"
+    playGame(False, False)
+    """
     initState = GameState(board)
     print "Minimax (depth=3):"
     minimaxExpanded = Counter()
-    print initState.minimax(counter=minimaxExpanded)
+    bestHeur, bestState = initState.minimax(depth=3, counter=minimaxExpanded)
+    print "Best Heuristic:", bestHeur
+    print "Best Next State:"
+    print bestState
     print "Nodes expanded:", minimaxExpanded
     
     print "Alpha-beta (depth=5):"
     alphabetaExpanded = Counter()
-    print initState.alphabeta(counter=alphabetaExpanded)
+    bestHeur, bestState = initState.alphabeta(depth=5, counter=alphabetaExpanded)
+    print "Best Heuristic:", bestHeur
+    print "Best Next State:"
+    print bestState
     print "Nodes expanded:", alphabetaExpanded
+    """
