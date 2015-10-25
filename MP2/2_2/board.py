@@ -1,4 +1,17 @@
 import time
+import os
+
+# Redirect stdout
+import sys
+from contextlib import contextmanager
+@contextmanager
+def stdout_redirected(new_stdout):
+    save_stdout = sys.stdout
+    sys.stdout = new_stdout
+    try:
+        yield None
+    finally:
+        sys.stdout = save_stdout
 
 def boardFromFile(filename):
     with open(filename, "r") as f:
@@ -29,6 +42,9 @@ class GameState(object):
 
     def __str__(self):
         return "\n".join([" ".join(row) for row in self.letterRepr()])
+
+    def printBoard(self):
+        print "\n".join([" ".join(row) for row in self.board])
 
     def letterRepr(self):
         ret = []
@@ -223,19 +239,32 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
     print "Done!" 
 
 if __name__ == "__main__":
-    board = boardFromFile("Westerplatte.txt")
-    
-    print "Minimax vs. Minimax"
-    playGame(False, False, minimaxDepth=3)
+    if not os.path.exists("results"):
+        os.mkdir("results")
+    boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
 
-    print '-'*80
-    print "Alphabeta vs. Alphabeta"
-    playGame(True, True, alphabetaDepth=4)
+    for bname in boards:
+        venue = bname.split('.')[0]
+        print "Processing", bname
+        with open(os.path.join("results", venue+".txt"), 'w') as f:
+            with stdout_redirected(f):
+                board = boardFromFile(bname)
+                print "Playing on", bname
+                print "\n".join([" ".join([str(num) for num in row]) for row in board])
+                
+                print '='*80
+                print "Minimax vs. Minimax"
+                playGame(False, False, minimaxDepth=3)
 
-    print '-'*80
-    print "Minimax vs. Alphabeta"
-    playGame(False, True, 3, 4)
+                print '-'*80
+                print "Alphabeta vs. Alphabeta"
+                playGame(True, True, alphabetaDepth=4)
 
-    print '-'*80
-    print "Alphabeta vs. Minimax"
-    playGame(True, False, 3, 4)
+                print '-'*80
+                print "Minimax vs. Alphabeta"
+                playGame(False, True, 3, 4)
+
+                print '-'*80
+                print "Alphabeta vs. Minimax"
+                playGame(True, False, 3, 4)
+        print "Done processing", bname
