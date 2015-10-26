@@ -1,6 +1,7 @@
 import random
 import sys
 import math 
+import copy
 
 def init_square(grid, N):	
 	while(N > 0):
@@ -11,6 +12,9 @@ def init_square(grid, N):
 			pt = point(a, b)
 			pt_arr.append(pt)
 			N = N - 1
+	#temp_pt_arr = copy.deepcopy(pt_arr)
+	#for i in range(int(len(temp_pt_arr))):
+		#print(temp_pt_arr[i].x, temp_pt_arr[i].y)
 	# for i in range(0,10):
 	# 	for j in range(0,10):
 	# 		x = 10*random.random()
@@ -27,8 +31,8 @@ def print_grid(grid):
 			print(grid[i][j]),
 		print("")
 	print("")
-	for point in pt_arr:
-	 	print(point.x, point.y)
+	#for point in pt_arr:
+	 	#print(point.x, point.y)
 
 # class grid:
 # 	def __init__(length,width,curr_x,curr_y):
@@ -44,7 +48,7 @@ def connect_lines_for_node(p1, pt_arr, best_dist):
 	b_fin = 0
 	temp_arr = pt_arr
 	best_point_idx = 0
-	for i in range(int(len(temp_arr) - 1)):
+	for i in range(int(len(temp_arr))):
 		pnt = temp_arr[i]
 		if(p1.x != pnt.x and p1.y != pnt.y):
 			a = p1.x - pnt.x
@@ -59,13 +63,17 @@ def connect_lines_for_node(p1, pt_arr, best_dist):
 				b_fin = pnt.y
 				best_point_idx = i
 	pt = point(a_fin, b_fin)
-	#check_int = check_for_intersect(p1, pt, line_arr)
-	check_int = 0
+	check_int = check_for_intersect(p1, pt, line_arr)
+	#check_int = 0
 	exist_int = check_if_exists(p1,pt,line_arr)
-	if(check_int == 0 and exist_int == 0 and p1.x != a_fin and p1.y != b_fin):
+	zero_check_one = check_for_zeros()
+	zero_check_two = 0
+	if(a_fin == 0 and b_fin == 0 and zero_check_one == 0):
+		zero_check_two = 1
+	if(check_int == 0 and exist_int == 0 and p1.x != a_fin and p1.y != b_fin and zero_check_two == 0):
 		connect = line(p1.x, p1.y, a_fin, b_fin)
 		line_arr.append(connect)
-		#print(connect.x1, connect.y1, connect.x2, connect.y2)
+		print(connect.x1, connect.y1, connect.x2, connect.y2)
 	temp_arr.remove(temp_arr[best_point_idx])
 	
 	#for pt in temp_arr:
@@ -90,10 +98,12 @@ def check_if_exists(p1, p2, line_arr):
 			return -1
 	return 0
 
-def cycle_through_nodes():
+def cycle_through_nodes(temp_pt_arr):
 	#cycle through nodes and call get_dist every time
-	rand_pt = int(len(pt_arr)*random.random())
-	temp_arr = pt_arr
+	rand_pt = int(len(temp_pt_arr)*random.random())
+	#temp_arr = pt_arr
+
+	temp_arr = copy.deepcopy(temp_pt_arr)
 
 	temp_arr.remove(temp_arr[rand_pt])
 
@@ -106,6 +116,43 @@ def cycle_through_nodes():
 		connect_lines_for_node(pt_arr[rand_pt],temp_arr, best_dist)
 		arr_len = arr_len - 1
 		#temp_arr.remove(temp_arr[best_point_idx])
+
+	return rand_pt
+
+
+def init_lines(temp_pt_arr):
+	#print('Initializing func')
+	#print(int(len(temp_pt_arr)))
+	while(int(len(temp_pt_arr)) > 0):
+		#print('Printing')
+		idx = cycle_through_nodes(temp_pt_arr)
+		#print(idx)
+		temp_pt_arr.remove(temp_pt_arr[idx])
+		#remove node
+
+	#zero_check = check_for_zeros()
+	#if(zero_check == 0):
+		#remove zeros from line_arr
+		#remove_zeros()
+
+		# for map_line in line_arr:
+		# 	if(map_line.x2 == 0 and map_line.y2 == 0):
+		# 		line_arr.remove(line_arr[map_line])
+
+
+#def remove_zeros():		
+	#for i in range(int(len(line_arr))):
+		#print('x')
+		#if(line_arr[i].x2 == 0 and line_arr[i].y2 == 0):
+			#print('y')
+			#line_arr.remove()
+
+def check_for_zeros():
+	for pnt in pt_arr:
+		if(pnt.x == 0 and pnt.y == 0):
+			return -1
+	return 0
+
 def check_for_intersect(p1,p2,line_arr):
 
 	x1 = int(p1.x)
@@ -119,7 +166,7 @@ def check_for_intersect(p1,p2,line_arr):
 		y3 = int(map_line.y1)
 		y4 = int(map_line.y2)
 
-		print("Line is: ", x3,y3,x4,y4)
+		#print("Line is: ", x3,y3,x4,y4)
 
 		denominator = int(((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)))
 
@@ -129,13 +176,17 @@ def check_for_intersect(p1,p2,line_arr):
 
 
 
-		#ua = ua_num / denominator
-		#ub = ub_num / denominator
+		if(denominator != 0):
+			ua = ua_num / denominator
+			ub = ub_num / denominator
 
-		print(ua_num, ub_num, denominator)
+		else:
+			ua = -1
+			ub = -1
+		#print(ua_num, ub_num, denominator)
 
-		ua = 4
-		ub = 4
+		#ua = 4
+		#ub = 4
 
 		if(ua > 0 and ua < 1 and ub > 0 and ub < 1):
 		#lines intersect, don't proceed 
@@ -158,13 +209,14 @@ class line:
 
 
 #grid = grid(10,10,0,0)
-grid = [[0 for x in range(10)] for x in range(10)]
+grid = [[' ' for x in range(10)] for x in range(10)]
 pt_arr = []
 line_arr = []
 best_dist = 500
 init_square(grid, int(sys.argv[1]))
+temp_pt_arr = copy.deepcopy(pt_arr)
 print_grid(grid)
-cycle_through_nodes()
+init_lines(temp_pt_arr)
 #print first_pt
 #call point at random 
 
