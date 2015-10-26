@@ -252,9 +252,9 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
 if __name__ == "__main__":
     if not os.path.exists("results"):
         os.mkdir("results")
-    # boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
-    boards = ["Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
-
+    boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
+    # boards = ["Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
+    
     for bname in boards:
         venue = bname.split('.')[0]
         print "Processing", bname
