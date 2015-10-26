@@ -162,7 +162,7 @@ class GameState(object):
                     bestState = nextState
         return (bestVal, bestState)
 
-    def alphabeta(self, depth=5, alpha=None, beta=None, counter=None):
+    def alphabeta(self, depth=3, alpha=None, beta=None, counter=None):
         # perform an alpha-beta tree search from this state
         if counter is not None:
             counter.increment()
@@ -217,7 +217,7 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
                 playMove = lambda counter: currState.alphabeta(depth=alphabetaDepth, counter=counter)
             else:
                 print "Player 1 using Minimax"
-                playMove = lambda counter: currState.minimax(depth=minimaxDepth, counter=counter)
+                playMove = lambda c. ounter: currState.minimax(depth=minimaxDepth, counter=counter)
         else:
             if minUseAlphabeta:
                 print "Player 2 using Alphabeta"
