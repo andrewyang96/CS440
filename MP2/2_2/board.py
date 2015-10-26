@@ -207,6 +207,10 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
     # allow mix of minimax and alpha-beta pruning
     currState = GameState(board)
     turnNum = 1
+    player1NodesExpanded = 0
+    player2NodesExpanded = 0
+    player1TimeTaken = 0
+    player2TimeTaken = 0
     while not currState.isFull():
         counter = Counter()
         playMove = None
@@ -244,16 +248,37 @@ def playGame(maxUseAlphabeta=True, minUseAlphabeta=True, minimaxDepth=3, alphabe
         print >> sys.stderr, "Best Next State:"
         print >> sys.stderr, nextState
         print
+        if currState.turn == 1:
+            player1NodesExpanded += counter.count
+            player1TimeTaken += elapsed
+        else:
+            player2NodesExpanded += counter.count
+            player2TimeTaken += elapsed
         currState = nextState
         turnNum += 1
-    print "Done!"
-    print >> sys.stderr, "Done!"
+    print "Final Results:"
+    print >> sys.stderr, "Final Results"
+    player1Score, player2Score = currState.calculateScores()
+    print "Player 1 Total # Nodes Expanded:", player1NodesExpanded
+    print >> sys.stderr, "Player 1 Total # Nodes Expanded:", player1NodesExpanded
+    print "Player 1 Total Time Taken:", player1TimeTaken
+    print >> sys.stderr, "Player 1 Total Time Taken:", player1TimeTaken
+    print "Player 1 Final Score:", player1Score
+    print >> sys.stderr, "Player 1 Final Score:", player1Score
+    print "Player 2 Total # Nodes Expanded:", player2NodesExpanded
+    print >> sys.stderr, "Player 2 Total # Nodes Expanded:", player2NodesExpanded
+    print "Player 2 Total Time Taken:", player2TimeTaken
+    print >> sys.stderr, "Player 2 Total Time Taken:", player2TimeTaken
+    print "Player 2 Final Score:", player2Score
+    print >> sys.stderr, "Player 2 Final Score:", player2Score
 
 if __name__ == "__main__":
     if not os.path.exists("results"):
         os.mkdir("results")
-    boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
+    # boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
     # boards = ["Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
+    boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt",
+              "Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
     
     for bname in boards:
         venue = bname.split('.')[0]
