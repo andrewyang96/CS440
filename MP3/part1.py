@@ -16,6 +16,17 @@ def convertToBinary(image, size=DIGITSIZE):
             ret[row][col] = (char != ' ')
     return ret
 
+def convertToProbMatrix(matrix, length, smoothing=1):
+    # converts from int matrix to float matrix (each val between 0 and 1)
+    # also applies Laplace smoothing
+    if smoothing < 1 or type(smoothing) != int:
+        raise ValueError("Smoothing must be a positive integer: {0}".format(smoothing))
+    ret = np.zeros(matrix.shape, dtype=float)
+    for row, line in enumerate(matrix):
+        for col, num in enumerate(line):
+            ret[row][col] = float(num + smoothing) / (length + smoothing*10)
+    return ret
+
 def parseDataFile(prefix):
     prefix = os.path.join(DATADIR, prefix)
     labelfile = prefix + "labels"
@@ -41,6 +52,7 @@ def constructTrainingSet():
         freqs.append(makeMatrix())
     for num, image in trainingSet:
         freqs[num] = np.add(freqs[num], image)
-    return freqs
+    length = len(trainingSet)
+    return map(lambda freq: convertToProbMatrix(freq, length), freqs)
 
 freqs = constructTrainingSet()
