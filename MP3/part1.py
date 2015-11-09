@@ -95,7 +95,9 @@ def confusionMatrix(testSets, model, freqs, outfile):
             f.write("Actual number is {0}\n".format(actualNum))
             confMat[actualNum][bestNum] += 1
         f.write("Generated matrix:\n")
+        print "Matrix:"
         f.write(str(confMat))
+        print confMat
         f.write('\n')
 
     normConfMat = confMat.astype(float)
