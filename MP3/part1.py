@@ -4,6 +4,7 @@ import math
 
 DIGITSIZE = 28
 DATADIR = "digitdata"
+LOGDIR = "digitlogs"
 
 def makeMatrix(size=DIGITSIZE):
     return np.zeros((size, size), dtype=int)
@@ -81,5 +82,20 @@ def determineMAPScore(test, model, baseProb):
                 score += math.log(1-prob)
     return score
 
+def confusionMatrix(testSets, model, freqs, outfile):
+    # generates confusion matrix of a specific model
+    confMat = np.zeros((10, 10), dtype=int)
+    for actualNum, testMatrix in testSets:
+        results = map(lambda num: (determineMAPScore(testMatrix, model[num], freqs[num]), num), range(10))
+        results.sort(reverse=True) # sort descending
+        bestScore, bestNum = results[0]
+        print "Best number is", bestNum, "with score", bestScore
+        print "Actual number is", actualNum
+        confMat[actualNum][bestNum] += 1
+    return confMat
+
+if not os.path.exists(LOGDIR):
+    os.mkdir(LOGDIR)
 models, freqs = constructTrainingSet()
 testSets = constructTestSet()
+confMat = confusionMatrix(testSets, models[1], freqs, None)
