@@ -83,19 +83,29 @@ def determineMAPScore(test, model, baseProb):
     return score
 
 def confusionMatrix(testSets, model, freqs, outfile):
-    # generates confusion matrix of a specific model
+    # generates normalized confusion matrix of a specific model
     confMat = np.zeros((10, 10), dtype=int)
-    for actualNum, testMatrix in testSets:
-        results = map(lambda num: (determineMAPScore(testMatrix, model[num], freqs[num]), num), range(10))
-        results.sort(reverse=True) # sort descending
-        bestScore, bestNum = results[0]
-        print "Best number is", bestNum, "with score", bestScore
-        print "Actual number is", actualNum
-        confMat[actualNum][bestNum] += 1
-    return confMat
+    print "Output to", outfile
+    with open(os.path.join(LOGDIR, outfile), 'w') as f:
+        for actualNum, testMatrix in testSets:
+            results = map(lambda num: (determineMAPScore(testMatrix, model[num], freqs[num]), num), range(10))
+            results.sort(reverse=True) # sort descending
+            bestScore, bestNum = results[0]
+            f.write("Best number is {0} with score {1}\n".format(bestNum, bestScore))
+            f.write("Actual number is {0}\n".format(actualNum))
+            confMat[actualNum][bestNum] += 1
+        f.write("Generated matrix:\n")
+        f.write(str(confMat))
+        f.write('\n')
+
+    normConfMat = confMat.astype(float)
+    normConfMat /= confMat.sum(axis=1)
+    return normConfMat
 
 if not os.path.exists(LOGDIR):
     os.mkdir(LOGDIR)
-models, freqs = constructTrainingSet()
+models, freqs = constructTrainingSet(range(1, 51))
 testSets = constructTestSet()
-confMat = confusionMatrix(testSets, models[1], freqs, None)
+# run tests
+for smoothing, model in models.iteritems():
+    confMat = confusionMatrix(testSets, model, freqs, "model-{0}.txt".format(smoothing))
