@@ -24,7 +24,7 @@ def convertToProbMatrix(matrix, length, smoothing=1):
     ret = np.zeros(matrix.shape, dtype=float)
     for row, line in enumerate(matrix):
         for col, num in enumerate(line):
-            ret[row][col] = float(num + smoothing) / (length + smoothing*10)
+            ret[row][col] = float(num + smoothing) / (length + smoothing*2)
     return ret
 
 def parseDataFile(prefix):
@@ -45,14 +45,20 @@ def parseDataFile(prefix):
     # Match labels and images
     return zip(labels, map(convertToBinary, images))
 
-def constructTrainingSet():
+def constructTrainingSet(smoothingLevels=[1,]):
     trainingSet = parseDataFile("training")
-    freqs = []
+    features = []
+    freqs = [0,]*10
     for n in range(10):
-        freqs.append(makeMatrix())
+        features.append(makeMatrix())
     for num, image in trainingSet:
-        freqs[num] = np.add(freqs[num], image)
-    length = len(trainingSet)
-    return map(lambda freq: convertToProbMatrix(freq, length), freqs)
+        features[num] = np.add(features[num], image)
+        freqs[num] += 1
+
+    ret = {}
+    for smoothing in smoothingLevels:
+        smoothed = map(lambda (num, matrix): convertToProbMatrix(matrix, freqs[num], smoothing), enumerate(features))
+        ret[smoothing] = smoothed
+    return ret
 
 freqs = constructTrainingSet()
