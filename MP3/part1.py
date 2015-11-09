@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import math
 
 DIGITSIZE = 28
 DATADIR = "digitdata"
@@ -46,6 +47,9 @@ def parseDataFile(prefix):
     return zip(labels, map(convertToBinary, images))
 
 def constructTrainingSet(smoothingLevels=[1,]):
+    # returns a two-element tuple:
+    # 0th element: a list of training models (list of matrices) with varying levels of smoothing
+    # 1st element: a list of frequencies of each digit
     trainingSet = parseDataFile("training")
     features = []
     freqs = [0,]*10
@@ -59,6 +63,23 @@ def constructTrainingSet(smoothingLevels=[1,]):
     for smoothing in smoothingLevels:
         smoothed = map(lambda (num, matrix): convertToProbMatrix(matrix, freqs[num], smoothing), enumerate(features))
         ret[smoothing] = smoothed
-    return ret
+    return (ret, map(lambda freq: float(freq) / len(trainingSet), freqs))
 
-freqs = constructTrainingSet()
+def constructTestSet():
+    # returns a list of (label, matrix) tuples
+    testSet = parseDataFile("test")
+    return testSet
+
+def determineMAPScore(test, model, baseProb):
+    # returns a log-score of the maximum a posteriori estimation
+    score = math.log(baseProb)
+    for row, line in enumerate(model):
+        for col, prob in enumerate(line):
+            if test[row][col]:
+                score += math.log(prob)
+            else:
+                score += math.log(1-prob)
+    return score
+
+models, freqs = constructTrainingSet()
+testSets = constructTestSet()
