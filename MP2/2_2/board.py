@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import time
 import os
 
@@ -277,8 +278,9 @@ if __name__ == "__main__":
         os.mkdir("results")
     # boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt"]
     # boards = ["Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
-    boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt",
-              "Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
+    # boards = ["Keren.txt", "Narvik.txt", "Sevastopol.txt", "Smolensk.txt", "Westerplatte.txt",
+    #           "Andrewmap1.txt", "Andrewmap2.txt", "Andrewmaplarge1.txt", "Andrewmaplarge2.txt", "Andrewmaplarge3.txt"]
+    boars = ["Keren.txt"]
     
     for bname in boards:
         venue = bname.split('.')[0]

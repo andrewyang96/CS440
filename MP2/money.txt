@@ -1,4 +1,0 @@
-ATM
-BUY
-PAY
-TAX

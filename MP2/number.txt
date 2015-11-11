@@ -1,4 +1,0 @@
-ONE
-TWO
-SIX
-TEN

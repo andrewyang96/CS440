@@ -1,8 +1,0 @@
-BAR
-BOP
-BOW
-DIN
-KEY
-POP
-RAP
-TIE
