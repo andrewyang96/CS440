@@ -139,12 +139,43 @@ def read_files(train_file, test_file, word_dict):
 	return prior_dict, word_dict, vocab_size
 
 def test_classifier(test_file, p_dict, w_dict, voc_size):
-	
+	actual_labels = []
+	predicted_labels = []
+	temp_max = 0
+	temp_key = 0
+	value = 0
 	for line in test_file.readlines():
-			space_split = line.rstrip().split(' ')
-			train_class = int(space_split[0])
+		space_split = line.rstrip().split(' ')
+		train_class = int(space_split[0])
+		#print(train_class)
+		actual_labels.append(train_class)
+		del space_split[0]
+		for d in w_dict:
+			value = math.log(float(p_dict[d]))
+			#print(value)
+			#for every dictionary go by line
+			for attribute in space_split:
+				word, count = attribute.split(':')
+				if(word in w_dict[d]):
+					#print(voc_size)
+					#temp_val = math.log(float((w_dict[d][word] + 1.0) / (sum(w_dict[d].itervalues()) + voc_size)))
+					#print(temp_val)
+					value += math.log(float((w_dict[d][word] + 1.0) / (sum(w_dict[d].itervalues()) + voc_size)))
+					#print(value)
+			#total value is gonna be the total likelihood
+			predicted_labels.append((d, value))
+		temp_max = 0
+		temp_key = 0
+		for tup in predicted_labels:
+			#print(tup[1])
+			if abs(tup[1]) > temp_max:
+				temp_max = abs(tup[1])
+				temp_key = tup[0]
+			print(temp_key)
+	for dec in actual_labels:
+		print(dec)
 
-			del space_split[0]
+
 
 def main():
 	#print("main")
