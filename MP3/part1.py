@@ -82,6 +82,19 @@ def determineMAPScore(test, model, baseProb):
                 score += math.log(1-prob)
     return score
 
+def determineAccuracy(confMatrix):
+    # returns list of accuracies and float of net accuracy
+    ret = []
+    totalCorrect = 0
+    overallTotal = 0
+    for num, row in enumerate(confMatrix):
+        numCorrect = row[num]
+        totalCorrect += numCorrect
+        total = sum(row)
+        overallTotal += total
+        ret.append(float(numCorrect) / total)
+    return (ret, float(totalCorrect) / overallTotal)
+
 def confusionMatrix(testSets, model, freqs, outfile):
     # generates normalized confusion matrix of a specific model
     confMat = np.zeros((10, 10), dtype=int)
@@ -98,6 +111,14 @@ def confusionMatrix(testSets, model, freqs, outfile):
         print "Matrix:"
         f.write(str(confMat))
         print confMat
+        accuracy, netAccuracy = determineAccuracy(confMat)
+        print "Accuracies:"
+        f.write("Accuracies:\n")
+        for num, prob in enumerate(accuracy):
+            print "{0}: {1}".format(str(num), str(prob))
+            f.write("{0}: {1}\n".format(str(num), str(prob)))
+        print "Net accuracy:", netAccuracy
+        f.write("Net accuracy: {0}\n".format(str(netAccuracy)))
         f.write('\n')
 
     normConfMat = confMat.astype(float)
