@@ -122,14 +122,16 @@ class Grid(object):
 
         optimalVal = max(rightVal, downVal, leftVal, upVal)
         if includeDirs:
-            return (optimalVal, {'r': rightVal, 'd': downVal, 'l': leftVal, 'u': upVal})
+            return (optimalVal, sorted([(rightVal, 'r'), (downVal, 'd'), (leftVal, 'l'), (upVal, 'u')], reverse=True))
         else:
             return optimalVal
 
     def constructModel(self, limit=1000, debug=False):
+        # returns (final rewards grid, optimal dir grid)
         baseLearningRate = 60. # decays as O(1/t): blr/(blr-1+t)
         discountFactor = 0.9
         currGrid = self.rewards.copy()
+        optimalDirGrid = []
 
         for trial in range(1, limit+1):
             learningRate = baseLearningRate / (baseLearningRate - 1 + trial)
@@ -138,6 +140,8 @@ class Grid(object):
                 print "TRIAL", trial
                 print
             for r, row in enumerate(self.grid):
+                optimalDirRow = []
+                
                 for c, char in enumerate(row):
                     if debug:
                         print "ANALYZING row", r, "col", c
@@ -146,16 +150,37 @@ class Grid(object):
                         if debug:
                             print "Row", r, "col", c, "is a wall"
                             print
+                        if trial == limit:
+                            # expect contribution to optimalDirRow
+                            optimalDirRow.append('x')
                     else:
-                        newGrid[r][c] = self._iterateCoord(currGrid, learningRate, discountFactor, (c, r))
                         if debug:
                             print "Row", r, "col", c, "has value", newGrid[r][c]
-                            print
+                        if trial == limit:
+                            # last trial: expect contribution to optimalDirRow
+                            newGrid[r][c], dirList = self._iterateCoord(currGrid, learningRate, discountFactor, (c, r), includeDirs=True)
+                            optimalDirRow.append(dirList[0][1])
+                            if debug:
+                                print "DIRLIST"
+                                for value, dir_ in dirList:
+                                    print dir_ + ':', value
+                        else:
+                            newGrid[r][c] = self._iterateCoord(currGrid, learningRate, discountFactor, (c, r))
+                            if debug:
+                                print
+                
+                if len(optimalDirRow) > 0:
+                    optimalDirGrid.append(optimalDirRow)
+            
             currGrid = newGrid
             print '='*80
-        return currGrid
+        return (currGrid, optimalDirGrid)
+
+def printDirGrid(dirGrid):
+    for row in dirGrid:
+        print ' '.join([char.upper() for char in row])
 
 if __name__ == "__main__":
     arr = parseGrid("data/part1_3_data.txt")
     grid = Grid(arr, (2,6))
-    rewards = grid.constructModel(10, True)
+    finalRewardsGrid, optimalDirGrid = grid.constructModel(10, True)
