@@ -1,7 +1,12 @@
 import numpy as np
 
 def parseGrid(filename):
-    pass
+    grid = []
+    with open(filename, 'r') as f:
+        for line in f:
+            row = list(line)
+            grid.append(row)
+        return grid
 
 class Grid(object):
     # O = empty
@@ -18,21 +23,24 @@ class Grid(object):
         self.hasPizza = False
 
         # populate rewards grid
-        shape = (len(grid), len(grid)[0])
+        shape = (len(grid), len(grid[0]))
         self.rewards = np.ndarray(shape, dtype=int)
-        for row in grid:
-            for col in row:
-                char = grid[row][col]
+        for r, row in enumerate(grid):
+            for c, char in enumerate(row):
                 reward = 0
                 if char == 'S':
                     reward = 50
                 else:
                     reward = -1
-                self.rewards[row][col] = reward
+                self.rewards[r][c] = reward
+
+    def _getReward(self, coords):
+        x, y = coords
+        return self.rewards[y][x]
 
     def _coordInGrid(self, coords):
         x, y = coords
-        ymaxl xmax = self.grid.shape
+        ymaxl, xmax = self.grid.shape
         return 0 <= x < xmax and 0 <= y < ymax
 
     def _coordInWall(self, coords):
@@ -65,3 +73,7 @@ class Grid(object):
         if dir_ == 'd' or dir_ == 'u':
             return ('r', 'l')
         raise ValueError("{0} is an invalid direction".format(dir_))
+
+if __name__ == "__main__":
+    arr = parseGrid("data/part1_3_data.txt")
+    grid = Grid(arr, (2,6))
