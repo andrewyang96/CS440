@@ -20,12 +20,29 @@ class Grid(object):
         # startpos - (x, y) coordinate
         # constructs markov decision process
         self.grid = np.array(grid)
-        self.hasGroceries = False
-        self.hasPizza = False
-
-        # populate rewards grid
         shape = (len(grid), len(grid[0]))
-        self.rewards = np.ndarray(shape, dtype=int)
+        template = np.ndarray(shape, dtype=int)
+
+        # self.rewards is a 2d array of numpy ndarrays
+        # row 0 indicates no groceries, row 1 indicates one grocery
+        # col 0 indicates no pizza, row 0 indicates one pizza
+        self.rewards = [[None, None], [None, None]]
+
+        # populate rewards grid for no groceries, no pizza
+        rewards = template.copy()
+        for r, row in enumerate(grid):
+            for c, char in enumerate(row):
+                reward = 0
+                if char == 'G':
+                    reward = 25
+                else:
+                    reward = -1
+                rewards[r][c] = reward
+        self.rewards[0][0] = rewards
+
+        # populate rewards grid for no groceries, one pizza
+        # also populates rewards grid for one grocery, one pizza
+        rewards = template.copy()
         for r, row in enumerate(grid):
             for c, char in enumerate(row):
                 reward = 0
@@ -33,7 +50,21 @@ class Grid(object):
                     reward = 50
                 else:
                     reward = -1
-                self.rewards[r][c] = reward
+                rewards[r][c] = reward
+        self.rewards[0][1] = rewards
+        self.rewards[1][1] = rewards
+
+        # populate rewards grid for one grocery, no pizza
+        rewards = template.copy()
+        for r, row in enumerate(grid):
+            for c, char in enumerate(row):
+                reward = 0
+                if char == 'P':
+                    reward = 25
+                else:
+                    reward = -1
+                rewards[r][c] = reward
+        self.rewards[1][0] = rewards
 
         # populate directions (actions) for each state (pos in grid)
         self.dirs = []
@@ -44,9 +75,9 @@ class Grid(object):
                 dirRow.append(dir_)
             self.dirs.append(dirRow)
 
-    def _getReward(self, coords):
+    def _getReward(self, coords, hasGroceries, hasPizza):
         x, y = coords
-        return self.rewards[y][x]
+        return self.rewards[hasGroceries][hasPizza][y][x]
 
     def _coordInGrid(self, coords):
         x, y = coords
@@ -126,12 +157,13 @@ class Grid(object):
         else:
             return optimalVal
 
-    def constructModel(self, limit=1000, debug=False):
-        # returns (final rewards grid, optimal dir grid)
+    def constructModel(self, hasGroceries, hasPizza, limit=1000, debug=False):
+        # returns (final rewards grid, optimal dir grid, final directions list on the grid)
         baseLearningRate = 60. # decays as O(1/t): blr/(blr-1+t)
-        discountFactor = 0.9
-        currGrid = self.rewards.copy()
+        discountFactor = 0.1
+        currGrid = self.rewards[hasGroceries][hasPizza].copy()
         optimalDirGrid = []
+        dirListGrid = []
 
         for trial in range(1, limit+1):
             learningRate = baseLearningRate / (baseLearningRate - 1 + trial)
@@ -141,6 +173,7 @@ class Grid(object):
                 print
             for r, row in enumerate(self.grid):
                 optimalDirRow = []
+                dirListRow = []
                 
                 for c, char in enumerate(row):
                     if debug:
@@ -160,6 +193,7 @@ class Grid(object):
                             # last trial: expect contribution to optimalDirRow
                             newGrid[r][c], dirList = self._iterateCoord(currGrid, learningRate, discountFactor, (c, r), includeDirs=True)
                             optimalDirRow.append(dirList[0][1])
+                            dirListRow.append(dirList)
                             if debug:
                                 print "DIRLIST"
                                 for value, dir_ in dirList:
@@ -171,16 +205,36 @@ class Grid(object):
                 
                 if len(optimalDirRow) > 0:
                     optimalDirGrid.append(optimalDirRow)
+                if len(dirListRow) > 0:
+                    dirListGrid.append(dirListRow)
             
             currGrid = newGrid
-            print '='*80
-        return (currGrid, optimalDirGrid)
+            if debug:
+                print '='*80
+        return (currGrid, optimalDirGrid, dirListGrid)
 
 def printDirGrid(dirGrid):
     for row in dirGrid:
         print ' '.join([char.upper() for char in row])
 
+def printDirListGrid(dirListGrid):
+    for r, row in enumerate(dirListGrid):
+        for c, dirs in enumerate(row):
+            print "Row", r, "col", c, "=", dirs
+
 if __name__ == "__main__":
     arr = parseGrid("data/part1_3_data.txt")
     grid = Grid(arr, (2,6))
-    finalRewardsGrid, optimalDirGrid = grid.constructModel(10, True)
+    dirListGrids = [[None, None], [None, None]]
+    
+    print "The Grid"
+    printDirGrid(arr)
+    print '='*80
+    for hasPizza in (False, True):
+        for hasGroceries in (False, True):
+            print "Has Groceries:", hasGroceries
+            print "Has Pizza:", hasPizza
+            finalRewardsGrid, optimalDirGrid, dirListGrid = grid.constructModel(hasGroceries, hasPizza, limit=20, debug=False)
+            dirListGrids[hasGroceries][hasPizza] = dirListGrid
+            printDirGrid(optimalDirGrid)
+            printDirListGrid(dirListGrid)
