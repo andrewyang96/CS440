@@ -1,4 +1,5 @@
 import numpy as np
+import operator
 
 def parseGrid(filename):
     grid = []
@@ -132,92 +133,115 @@ class Grid(object):
 
         return correctDirVal + sum(orthoDirVals)
 
-    def _iterateCoord(self, rewardsGrid, learningRate, discountFactor, coords, includeDirs=False):
-        # s - state (position on grid)
-        # a - action (r, d, l, u)
+    def _estimateStateActionValue(self, dir_, coords, dirGrid):
+        x, y = coords
+        correctX, correctY = self.dirs[y][x][dir_]
+        correctDirVal = 0.9 * max(dirGrid[correctY][correctX].values())
+
+        orthoDirVals = []
+        for orthoDir in self._getOrthogonalDirs(dir_):
+            orthoX, orthoY = self.dirs[y][x][orthoDir]
+            orthoDirVal = 0.05 * max(dirGrid[correctY][correctX].values())
+            orthoDirVals.append(orthoDirVal)
+
+        return correctDirVal + sum(orthoDirVals)
+
+    def _iterateCoord(self, rewardsGrid, dirGrid, learningRate, discountFactor, coords, dir_):
+        # s - state (position on grid) <- coords
+        # a - action (r, d, l, u) <- dir_
         # Q0(s, a) - old value
-        # Q1(s, a) - new value (return value given includeDirs=False)
+        # Q1(s, a) - new value
         # lr - learning rate
         # df - discount factor
         # r - reward for given coords
         # if includeDirs=True, then return tuple: (Q1(s, a), sorted descending array of (value, dir) tuple)
         # Equation:
-        # Q1(s, a) = Q0(s, a) + lr * (r + df * max(estimate of future value for each dir) - Q0(s, a))
+        # Q1(s, a) = Q0(s, a) + lr * (r + df * max(estimate of future value for each dir in adjacent state) - Q0(s, a))
+        # returns dict of direction-value pairs
         x, y = coords
-        oldVal = rewardsGrid[y][x]
+        
+        immediateReward = rewardsGrid[y][x] # r
+        maxEstFutureVal = self._estimateStateActionValue(dir_, coords, dirGrid) # max(estimate of future value for each dir in adjacent state)
+        return dirGrid[y][x][dir_] + learningRate * (immediateReward + discountFactor * maxEstFutureVal - dirGrid[y][x][dir_])
 
-        rightVal = self._estimateFutureValue('r', coords, rewardsGrid)
-        downVal = self._estimateFutureValue('d', coords, rewardsGrid)
-        leftVal = self._estimateFutureValue('l', coords, rewardsGrid)
-        upVal = self._estimateFutureValue('u', coords, rewardsGrid)
+    def _generateInitialDirGrid(self, hasGroceries, hasPizza):
+        rewardsGrid = self.rewards[hasGroceries][hasPizza]
+        optimalDirGrid = []
 
-        optimalVal = max(rightVal, downVal, leftVal, upVal)
-        if includeDirs:
-            return (optimalVal, sorted([(rightVal, 'r'), (downVal, 'd'), (leftVal, 'l'), (upVal, 'u')], reverse=True))
-        else:
-            return optimalVal
+        for r, row in enumerate(self.grid):
+            optimalDirRow = []
+            for c, char in enumerate(row):
+                if char == 'W':
+                    optimalDirRow.append(None)
+                else:
+                    rightReward = self._estimateFutureValue('r', (c, r), rewardsGrid)
+                    downReward = self._estimateFutureValue('d', (c, r), rewardsGrid)
+                    leftReward = self._estimateFutureValue('l', (c, r), rewardsGrid)
+                    upReward = self._estimateFutureValue('u', (c, r), rewardsGrid)
+                    optimalDirRow.append({'r': rightReward, 'd': downReward, 'l': leftReward, 'u': upReward})
+            optimalDirGrid.append(optimalDirRow)
+        return optimalDirGrid
 
     def constructModel(self, hasGroceries, hasPizza, limit=1000, debug=False):
-        # returns (final rewards grid, optimal dir grid, final directions list on the grid)
+        # returns (optimal dir grid, final directions list on the grid)
         baseLearningRate = 60. # decays as O(1/t): blr/(blr-1+t)
         discountFactor = 0.1
-        currGrid = self.rewards[hasGroceries][hasPizza].copy()
-        optimalDirGrid = []
-        dirListGrid = []
+        rewardsGrid = self.rewards[hasGroceries][hasPizza]
+        optimalDirGrid = self._generateInitialDirGrid(hasGroceries, hasPizza)
 
         for trial in range(1, limit+1):
             learningRate = baseLearningRate / (baseLearningRate - 1 + trial)
-            newGrid = map(list, currGrid) # deepcopy
+            newDirGrid = map(list, optimalDirGrid)
             if debug:
                 print "TRIAL", trial
                 print
             for r, row in enumerate(self.grid):
-                optimalDirRow = []
-                dirListRow = []
-                
                 for c, char in enumerate(row):
                     if debug:
                         print "ANALYZING row", r, "col", c
                     if char == 'W':
-                        newGrid[r][c] = currGrid[r][c]
                         if debug:
                             print "Row", r, "col", c, "is a wall"
                             print
-                        if trial == limit:
-                            # expect contribution to optimalDirRow
-                            optimalDirRow.append('x')
+                        newDirGrid[r][c] = None
                     else:
                         if debug:
                             print "Row", r, "col", c, "has value", newGrid[r][c]
-                        if trial == limit:
-                            # last trial: expect contribution to optimalDirRow
-                            newGrid[r][c], dirList = self._iterateCoord(currGrid, learningRate, discountFactor, (c, r), includeDirs=True)
-                            optimalDirRow.append(dirList[0][1])
-                            dirListRow.append(dirList)
-                            if debug:
-                                print "DIRLIST"
-                                for value, dir_ in dirList:
-                                    print dir_ + ':', value
-                        else:
-                            newGrid[r][c] = self._iterateCoord(currGrid, learningRate, discountFactor, (c, r))
-                            if debug:
-                                print
-                
-                if len(optimalDirRow) > 0:
-                    optimalDirGrid.append(optimalDirRow)
-                if len(dirListRow) > 0:
-                    dirListGrid.append(dirListRow)
-            
-            currGrid = newGrid
+                        rightDirVal = self._iterateCoord(rewardsGrid, optimalDirGrid, learningRate, discountFactor, (c, r), 'r')
+                        downDirVal = self._iterateCoord(rewardsGrid, optimalDirGrid, learningRate, discountFactor, (c, r), 'd')
+                        leftDirVal = self._iterateCoord(rewardsGrid, optimalDirGrid, learningRate, discountFactor, (c, r), 'l')
+                        upDirVal = self._iterateCoord(rewardsGrid, optimalDirGrid, learningRate, discountFactor, (c, r), 'u')
+                        newDirGrid[r][c] = {'r': rightDirVal, 'd': downDirVal, 'l': leftDirVal, 'u': upDirVal}
+                        if debug:
+                            print "DIRLIST"
+                            dirList = sorted([(rightDirVal, 'r'), (downDirVal, 'd'), (leftDirVal, 'l'), (upDirVal, 'u')], reverse=True)
+                            for estVal, dir_ in dirList:
+                                print dir_ + ':', estVal
+                            print
+                                        
+            optimalDirGrid = newDirGrid
             if debug:
                 print '='*80
-        return (currGrid, optimalDirGrid, dirListGrid)
 
-def printDirGrid(dirGrid):
+        # construct dirListGrid
+        bestDirGrid = []
+        for r, row in enumerate(optimalDirGrid):
+            bestDirRow = []
+            for c, dirs in enumerate(row):
+                if dirs is None:
+                    bestDirRow.append('x')
+                else:
+                    sortedDirs = sorted(dirs, key=lambda dir_: -dirs[dir_])
+                    bestDirRow.append(sortedDirs[0])
+            bestDirGrid.append(bestDirRow)
+        
+        return (optimalDirGrid, bestDirGrid)
+
+def printBestDirGrid(dirGrid):
     for row in dirGrid:
         print ' '.join([char.upper() for char in row])
 
-def printDirListGrid(dirListGrid):
+def printDirGrid(dirListGrid):
     for r, row in enumerate(dirListGrid):
         for c, dirs in enumerate(row):
             print "Row", r, "col", c, "=", dirs
@@ -225,16 +249,16 @@ def printDirListGrid(dirListGrid):
 if __name__ == "__main__":
     arr = parseGrid("data/part1_3_data.txt")
     grid = Grid(arr, (2,6))
-    dirListGrids = [[None, None], [None, None]]
+    bestDirGrids = [[None, None], [None, None]]
     
     print "The Grid"
-    printDirGrid(arr)
+    printBestDirGrid(arr)
     print '='*80
     for hasPizza in (False, True):
         for hasGroceries in (False, True):
             print "Has Groceries:", hasGroceries
             print "Has Pizza:", hasPizza
-            finalRewardsGrid, optimalDirGrid, dirListGrid = grid.constructModel(hasGroceries, hasPizza, limit=20, debug=False)
-            dirListGrids[hasGroceries][hasPizza] = dirListGrid
-            printDirGrid(optimalDirGrid)
-            printDirListGrid(dirListGrid)
+            dirGrid, bestDirGrid = grid.constructModel(hasGroceries, hasPizza, limit=20, debug=False)
+            bestDirGrids[hasGroceries][hasPizza] = bestDirGrid
+            # printDirGrid(dirGrid)
+            printBestDirGrid(bestDirGrid)
