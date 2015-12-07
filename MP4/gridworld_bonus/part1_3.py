@@ -16,7 +16,7 @@ class Grid(object):
     # G = grocery
     # P = pizza shop
     # IMPORTANT: x-coord is col num, y-coord is row num
-    def __init__(self, grid, startpos):
+    def __init__(self, grid):
         # grid - 2d array
         # startpos - (x, y) coordinate
         # constructs markov decision process
@@ -182,15 +182,14 @@ class Grid(object):
             optimalDirGrid.append(optimalDirRow)
         return optimalDirGrid
 
-    def constructModel(self, hasGroceries, hasPizza, limit=1000, debug=False):
+    def constructModel(self, hasGroceries, hasPizza, limit=1000, baseLearningRate=60., discountFactor=0.1, debug=False):
         # returns (optimal dir grid, final directions list on the grid)
-        baseLearningRate = 60. # decays as O(1/t): blr/(blr-1+t)
-        discountFactor = 0.1
+        # baseLearningRate decays as O(1/t): blr/(blr-1+t)
         rewardsGrid = self.rewards[hasGroceries][hasPizza]
         optimalDirGrid = self._generateInitialDirGrid(hasGroceries, hasPizza)
 
         for trial in range(1, limit+1):
-            learningRate = baseLearningRate / (baseLearningRate - 1 + trial)
+            learningRate = float(baseLearningRate) / (baseLearningRate - 1 + trial)
             newDirGrid = map(list, optimalDirGrid)
             if debug:
                 print "TRIAL", trial
@@ -239,8 +238,8 @@ class Grid(object):
 
 class BonusGrid(Grid):
     # H = health, go there after delivering pizza
-    def __init__(self, grid, startpos):
-        super(BonusGrid, self).__init__(grid, startpos)
+    def __init__(self, grid):
+        super(BonusGrid, self).__init__(grid)
 
         # populate health rewards grid
         shape = (len(grid), len(grid[0]))
@@ -276,10 +275,8 @@ class BonusGrid(Grid):
         else:
             return super(BonusGrid, self)._generateInitialDirGrid(hasGroceries, hasPizza)
 
-    def constructModel(self, hasGroceries, hasPizza, needHealth, limit=1000, debug=False):
+    def constructModel(self, hasGroceries, hasPizza, needHealth, limit=1000, baseLearningRate=60., discountFactor=0.1, debug=False):
         if needHealth:
-            baseLearningRate = 60. # decays as O(1/t): blr/(blr-1+t)
-            discountFactor = 0.1
             rewardsGrid = self.healthRewards
             optimalDirGrid = self._generateInitialDirGrid(hasGroceries, hasPizza)
 
@@ -331,7 +328,7 @@ class BonusGrid(Grid):
             
             return (optimalDirGrid, bestDirGrid)
         else:
-            return super(BonusGrid, self).constructModel(hasGroceries, hasPizza, limit, debug)
+            return super(BonusGrid, self).constructModel(hasGroceries, hasPizza, limit, baseLearningRate, discountFactor, debug)
 
 def printBestDirGrid(dirGrid):
     for row in dirGrid:
@@ -342,66 +339,76 @@ def printDirGrid(dirListGrid):
         for c, dirs in enumerate(row):
             print "Row", r, "col", c, "=", dirs
 
-def testBasic():
+def testBasic(trials=100, baseLearningRate=60., discountFactor=0.1):
     arr = parseGrid("data/part1_3_data.txt")
-    grid = Grid(arr, (2,6))
+    grid = Grid(arr)
     bestDirGrids = [[None, None], [None, None]]
     
     print "The Grid"
+    print "Num Trials:", trials
+    print "Base Learning Rate:", baseLearningRate
+    print "Discount Factor:", discountFactor
     printBestDirGrid(arr)
     print '='*80
     for hasPizza in (False, True):
         for hasGroceries in (False, True):
             print "Has Groceries:", hasGroceries
             print "Has Pizza:", hasPizza
-            dirGrid, bestDirGrid = grid.constructModel(hasGroceries, hasPizza, limit=100, debug=False)
+            dirGrid, bestDirGrid = grid.constructModel(hasGroceries, hasPizza, limit=trials, debug=False)
             bestDirGrids[hasGroceries][hasPizza] = bestDirGrid
             # printDirGrid(dirGrid)
             printBestDirGrid(bestDirGrid)
+    print
 
-def testDivided():
+def testDivided(trials=400, baseLearningRate=60., discountFactor=0.1):
     arr = parseGrid("data/part1_3_divided.txt")
-    grid = Grid(arr, (2,6))
+    grid = Grid(arr)
     bestDirGrids = [[None, None], [None, None]]
     
     print "The Grid"
+    print "Num Trials:", trials
+    print "Base Learning Rate:", baseLearningRate
+    print "Discount Factor:", discountFactor
     printBestDirGrid(arr)
     print '='*80
     for hasPizza in (False, True):
         for hasGroceries in (False, True):
             print "Has Groceries:", hasGroceries
             print "Has Pizza:", hasPizza
-            dirGrid, bestDirGrid = grid.constructModel(hasGroceries, hasPizza, limit=500, debug=False)
+            dirGrid, bestDirGrid = grid.constructModel(hasGroceries, hasPizza, limit=trials, debug=False)
             bestDirGrids[hasGroceries][hasPizza] = bestDirGrid
             # printDirGrid(dirGrid)
             printBestDirGrid(bestDirGrid)
+    print
 
-def testBonus():
+def testBonus(trials=100, baseLearningRate=60., discountFactor=0.1):
     arr = parseGrid("data/part1_3_bonus_data.txt")
-    grid = BonusGrid(arr, (2,6))
+    grid = BonusGrid(arr)
     bestDirGrids = [[None, None], [None, None]]
     healthGrid = None
-    
-    limit = 100
     debug = False
 
     print "The Grid"
+    print "Num Trials:", trials
+    print "Base Learning Rate:", baseLearningRate
+    print "Discount Factor:", discountFactor
     printBestDirGrid(arr)
     print '='*80
     for hasPizza in (False, True):
         for hasGroceries in (False, True):
             print "Has Groceries:", hasGroceries
             print "Has Pizza:", hasPizza
-            dirGrid, bestDirGrid = grid.constructModel(hasGroceries, hasPizza, False, limit=limit, debug=debug)
+            dirGrid, bestDirGrid = grid.constructModel(hasGroceries, hasPizza, False, limit=trials, debug=debug)
             bestDirGrids[hasGroceries][hasPizza] = bestDirGrid
             # printDirGrid(dirGrid)
             printBestDirGrid(bestDirGrid)
     
     print "NEED HEALTH"
-    dirGrid, bestDirGrid = grid.constructModel(False, False, True, limit=limit, debug=debug)
+    dirGrid, bestDirGrid = grid.constructModel(False, False, True, limit=trials, debug=debug)
     healthGrid = bestDirGrid
     # printDirGrid(dirGrid)
     printBestDirGrid(bestDirGrid)
+    print
 
 if __name__ == "__main__":
     testBasic()
