@@ -411,6 +411,22 @@ def testBonus(trials=100, baseLearningRate=60., discountFactor=0.1):
     print
 
 if __name__ == "__main__":
-    testBasic()
-    testDivided()
-    testBonus()
+    regTrials = -1
+    while regTrials < 1:
+        regTrials = int(input("Enter number of trials for regular grid (positive int): "))
+    
+    largeTrials = -1
+    while largeTrials < 1:
+        largeTrials = int(input("Enter number of trials for large grid (positive int): "))
+
+    baseLearningRate = -1.
+    while baseLearningRate <= 0.:
+        baseLearningRate = float(input("Enter base learning rate (positive float): "))
+
+    discountFactor = -1.
+    while not 0 <= discountFactor < 1:
+        discountFactor = float(input("Enter discount factor (float between 0 and 1): "))
+    
+    testBasic(regTrials, baseLearningRate, discountFactor)
+    testDivided(largeTrials, baseLearningRate, discountFactor)
+    testBonus(regTrials, baseLearningRate, discountFactor)
